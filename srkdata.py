@@ -5,14 +5,54 @@ import srkanalysis
 
 __author__ = 'mjbales'
 
-macro_dir = '/home/mjbales/work/nedm/macros/'
-results_dir = '/home/mjbales/work/nedm/results/'
-logs_dir = '/home/mjbales/work/nedm/logs/'
-srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
-database_path = '/home/mjbales/work/nedm/analysis/nedmAnalysis.sqlite'
-database_runlog_table_name = 'RunLog'
-optima_results_dir = results_dir
-optima_address="optimal.universe-cluster.de"
+
+class SRKSystems:
+    macro_dir = '/home/mjbales/work/nedm/macros/'
+    results_dir = '/home/mjbales/work/nedm/results/'
+    logs_dir = '/home/mjbales/work/nedm/logs/'
+    srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
+    database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
+    database_runlog_table_name = 'RunLog'
+    optima_results_dir = results_dir
+    optima_address="optimal.universe-cluster.de"
+    settings_file_read= False
+    computer = 'work_laptop'
+    os = 'Linux'
+    def __init__(self):
+        self.read_settings_file()
+        return
+
+    def read_settings_file(self):
+        if SRKSystems.settings_file_read:
+            return
+        f=open('settings.txt','r')
+        for line in f:
+            if line[0] != '#':
+                command, value = line.split(' ')
+                if command == 'setComputer':
+                    SRKSystems.set_computer(self,value)
+        f.close()
+        SRKSystems.settings_file_read = True
+        return
+
+    def set_computer(self, value):
+        SRKSystems.computer=value
+        if SRKSystems.computer == 'work_laptop':
+            SRKSystems.macro_dir = '/home/mjbales/work/nedm/macros/'
+            SRKSystems.results_dir = '/home/mjbales/work/nedm/results/'
+            SRKSystems.logs_dir = '/home/mjbales/work/nedm/logs/'
+            SRKSystems.srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
+            SRKSystems.database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
+            SRKSystems.os = 'Linux'
+        elif SRKSystems.computer == 'home_desktop':
+            SRKSystems.macro_dir = 'D:\\work\\nedm\\macros\\'
+            SRKSystems.results_dir = 'D:\\work\\nedm\\results\\'
+            SRKSystems.logs_dir = 'D:\\work\\nedm\\logs\\'
+            SRKSystems.srk_path = 'D:\\work\\code\\SRK\\Release\\SRK.exe'
+            SRKSystems.database_path = 'D:\\work\\code\\SRKAnalysis\\nedmAnalysis.sqlite'
+            SRKSystems.os = 'Windows'
+
+
 
 
 # Default settings for macro files for SRK
@@ -104,8 +144,10 @@ def merge_dicts(*dict_args):
 
 
 def make_macro_mult_from_database(run_ids):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     rid_str = "".join([str(x)+'_' for x in run_ids])[:-1]
-    macro_file_path = macro_dir + 'RID' + rid_str + '.mac'
+    macro_file_path = SRKSystems.macro_dir + 'RID' + rid_str + '.mac'
     f = open(macro_file_path, 'w')
 
     first = True
@@ -126,11 +168,11 @@ def make_macro_mult_from_database(run_ids):
             f.write('trackSpinsDeltaOmega ' + str(run_settings['NumTracksPer']))
         elif run_settings['RunType'] == 'parOnly':
             f.write('setParallelFields 1'+'\n')
-            f.write('setResultsFilePath ' + results_dir + "Results_RID" + str(run_id) + "_P.root"+'\n')
+            f.write('setResultsFilePath ' + SRKSystems.results_dir + "Results_RID" + str(run_id) + "_P.root"+'\n')
             f.write('trackSpins ' + str(run_settings['NumTracksPer']))
         elif run_settings['RunType'] == 'antiOnly':
             f.write('setParallelFields 0'+'\n')
-            f.write('setResultsFilePath ' + results_dir + "Results_RID" + str(run_id) + "_A.root"+'\n')
+            f.write('setResultsFilePath ' + SRKSystems.results_dir + "Results_RID" + str(run_id) + "_A.root"+'\n')
             f.write('trackSpins ' + str(run_settings['NumTracksPer']))
 
     f.close()
@@ -138,7 +180,9 @@ def make_macro_mult_from_database(run_ids):
 
 
 def make_macro(run_id, srk_settings, run_settings):
-    macro_file_path = macro_dir + 'RID' + str(run_id) + '.mac'
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    macro_file_path = SRKSystems.macro_dir + 'RID' + str(run_id) + '.mac'
     f = open(macro_file_path, 'w')
 
     f.write('#' + str(run_settings) + '\n')
@@ -151,11 +195,11 @@ def make_macro(run_id, srk_settings, run_settings):
         f.write('trackSpinsDeltaOmega ' + str(run_settings['NumTracksPer']))
     elif run_settings['RunType'] == 'parOnly':
         f.write('setParallelFields 1'+'\n')
-        f.write('setResultsFilePath ' + results_dir + "Results_RID" + str(run_id) + "_P.root"+'\n')
+        f.write('setResultsFilePath ' + SRKSystems.results_dir + "Results_RID" + str(run_id) + "_P.root"+'\n')
         f.write('trackSpins ' + str(run_settings['NumTracksPer']))
     elif run_settings['RunType'] == 'antiOnly':
         f.write('setParallelFields 0'+'\n')
-        f.write('setResultsFilePath ' + results_dir + "Results_RID" + str(run_id) + "_A.root"+'\n')
+        f.write('setResultsFilePath ' + SRKSystems.results_dir + "Results_RID" + str(run_id) + "_A.root"+'\n')
         f.write('trackSpins ' + str(run_settings['NumTracksPer']))
 
     f.close()
@@ -172,9 +216,11 @@ def add_to_database(values_dict):
 
     :rtype : int
     """
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
 
     # Connect to DB
-    db_connection = sqlite3.connect(database_path)
+    db_connection = sqlite3.connect(SRKSystems.database_path)
     db_cursor = db_connection.cursor()
 
     # Must gather column names and their values
@@ -189,7 +235,7 @@ def add_to_database(values_dict):
     question_mark_string = question_mark_string[:-1]  # remove last comma
 
     # Insert into table
-    insert_string = 'INSERT INTO ' + database_runlog_table_name + '(' + column_string \
+    insert_string = 'INSERT INTO ' + SRKSystems.database_runlog_table_name + '(' + column_string \
                   + ') Values (' + question_mark_string + ')'
     db_cursor.execute(insert_string, value_tuple)
     print('Insert String: '+insert_string+'\n')
@@ -210,18 +256,19 @@ def update_database(values_dict, where_str):
 
     :rtype : int
     """
-
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     if len(values_dict) <= 0:
         print "Update database command has no values, nothing updated"
         return
 
     # Connect to DB
-    db_connection = sqlite3.connect(database_path)
+    db_connection = sqlite3.connect(SRKSystems.database_path)
     db_cursor = db_connection.cursor()
 
     # Must gather column names and their values
     value_tuple = ()
-    update_string = 'UPDATE '+database_runlog_table_name + " SET "
+    update_string = 'UPDATE '+SRKSystems.database_runlog_table_name + " SET "
     for x in values_dict.keys():
         update_string += x + "=?, "
         value_tuple += (values_dict[x],)
@@ -238,12 +285,13 @@ def update_database(values_dict, where_str):
 
 
 def get_data_for_rids_from_database(run_ids, columns_str, db_connection=None):
-
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     database_was_open = True
     if db_connection is None:
         # Open DB connection
         database_was_open = False
-        db_connection = sqlite3.connect(database_path)
+        db_connection = sqlite3.connect(SRKSystems.database_path)
 
     db_cursor = db_connection.cursor()
 
@@ -252,7 +300,7 @@ def get_data_for_rids_from_database(run_ids, columns_str, db_connection=None):
         where_str += ' Run =' + str(x) + ' OR '
     where_str += ' Run =' + str(run_ids[-1])
 
-    select_str = 'SELECT ' + columns_str + ' FROM ' + database_runlog_table_name+where_str
+    select_str = 'SELECT ' + columns_str + ' FROM ' + SRKSystems.database_runlog_table_name+where_str
     db_cursor.execute(select_str)
     values_from_select = db_cursor.fetchall()
 
@@ -264,9 +312,10 @@ def get_data_for_rids_from_database(run_ids, columns_str, db_connection=None):
 
 
 def get_settings_from_database(run_id, db_connection=None):
-
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     # Open DB connection
-    db_connection = sqlite3.connect(database_path)
+    db_connection = sqlite3.connect(SRKSystems.database_path)
     db_cursor = db_connection.cursor()
 
     # Must gather column names and their values
@@ -314,9 +363,11 @@ def sync_results_to_optima():
 
 
 def run_command_optima(command):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(optima_address, username="mjbales")
+    ssh.connect(SRKSystems.optima_address, username="mjbales")
     ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
     print('$OPTIMA stdout: ' + str(ssh_stdout.readlines()))
     print('$OPTIMA stderr: ' + str(ssh_stderr.readlines()))
@@ -324,24 +375,29 @@ def run_command_optima(command):
 
 
 def run_macro_optima(rid_numbers):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
     sync_macros_to_optima()
     command = '. "/opt/software/root/root_v5.34.21/bin/thisroot.sh"; '
 
     for i in rid_numbers:
-        command += 'nohup /home/mjbales/SRK/build/bin/SRK ' + macro_dir + 'RID' + str(
-            i) + '.mac &> ' + logs_dir + 'logRID' + str(i) + '.txt&'
+        command += 'nohup /home/mjbales/SRK/build/bin/SRK ' +SRKSystems.macro_dir + 'RID' + str(
+            i) + '.mac &> ' + SRKSystems.logs_dir + 'logRID' + str(i) + '.txt&'
         command += '; '
     command = command[:-2]  # remove last semicolon and space
 
     run_command_optima(command)
 
-def run_macro_mult_laptop(rid_numbers):
+def run_macro_local(rid_numbers):
     rid_str = "".join([str(x)+'_' for x in rid_numbers])[:-1]
     run_macro_laptop(rid_str)
 
 def run_macro_laptop(rid_number):
-    command = 'nohup ' + srk_path + ' ' + macro_dir + 'RID' + str(rid_number) + '.mac'
-    command += ' > ' + logs_dir + 'logRID' + str(rid_number) + '.txt&'
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+
+    command = 'nohup ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
+    command += ' > ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt&'
     print command
 
     call(command, shell=True)
@@ -359,11 +415,12 @@ def run_on_optima(srk_settings, run_settings):
 
 
 def fix_dipole_positions_in_table(first, last):
-
-    db_connection = sqlite3.connect(database_path)
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    db_connection = sqlite3.connect(SRKSystems.database_path)
     db_cursor = db_connection.cursor()
     where_str = ' WHERE Run >= ' + str(first) + ' AND Run <= ' + str(last)
-    select_command = 'SELECT DipolePositionBelowChamber FROM ' + database_runlog_table_name + where_str
+    select_command = 'SELECT DipolePositionBelowChamber FROM ' + SRKSystems.database_runlog_table_name + where_str
     db_cursor.execute(select_command, ())
     position_below = db_cursor.fetchall()
 
@@ -371,7 +428,7 @@ def fix_dipole_positions_in_table(first, last):
     for i in position_below:
         dipole_positions += [('0. 0. '+str(i[0]),)]
 
-    update_command = 'UPDATE ' + database_runlog_table_name + ' SET DipolePosition=?' + where_str+';'
+    update_command = 'UPDATE ' + SRKSystems.database_runlog_table_name + ' SET DipolePosition=?' + where_str+';'
     db_cursor.executemany(update_command,dipole_positions)
 
     db_connection.commit()
@@ -379,8 +436,9 @@ def fix_dipole_positions_in_table(first, last):
 
 
 def execute_runlog_command(command, value_tuple):
-
-    db_connection = sqlite3.connect(database_path)
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    db_connection = sqlite3.connect(SRKSystems.database_path)
     db_cursor = db_connection.cursor()
 
     db_cursor.execute(command, value_tuple)
@@ -410,8 +468,9 @@ def calc_orientation_stats_to_database(run_id, is_parallel):
 
 # presumes 2D array incoming for multiple lines
 def get_plot_data_from_database(rids_for_many_graphs, column_x, column_y):
-
-    db_connection = sqlite3.connect(database_path)
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    db_connection = sqlite3.connect(SRKSystems.database_path)
 
     x_out = []
     y_out = []

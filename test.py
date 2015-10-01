@@ -149,6 +149,35 @@ today = date.today()
 #     srkdata.calc_orientation_stats_to_database(i, True)
 
 #####################################################################
+# dist_range = np.concatenate([[.001], np.arange(.01, .11, .01)])
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 1000
+# r['Title'] = 'Fixed Chamber Height, Vary E Field'
+# s['E0FieldStrength'] = 5e5
+#
+# rid_list = []
+# for dip_str in srkmisc.even_sample_over_log(1e-18, 1e-13, 6):
+#     s['DipoleFieldStrength'] = dip_str
+#     for dist in dist_range:
+#         s['DipolePosition'] = '0. 0. '+str(-0.5 * s['ChamberHeight'] - dist)
+#         rid_list += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+# #
+# # #
+# #
+# # rid_list = range(377, 443)
+# rid_chunks = [rid_list[x:x+len(dist_range)] for x in xrange(0, len(rid_list), len(dist_range))]
+# for i in rid_chunks:
+#     srkdata.make_macro_mult_from_database(i)
+#     srkdata.run_macro_mult_laptop(i)
+
+###################################################
+# Variable electric field
 dist_range = np.concatenate([[.001], np.arange(.01, .11, .01)])
 
 s = srkdata.default_srk_settings()
@@ -159,11 +188,12 @@ r['Date'] = today.strftime('%m/%d/%y')
 r['RunType'] = 'parOnly'
 r['NumTracksPer'] = 1000
 r['Title'] = 'Fixed Chamber Height, Vary E Field'
-s['E0FieldStrength'] = 5e5
+
+s['DipoleFieldStrength'] = 1e-16
 
 rid_list = []
-for dip_str in srkmisc.even_sample_over_log(1e-18, 1e-13, 6):
-    s['DipoleFieldStrength'] = dip_str
+for e_field in srkmisc.even_sample_over_log(1e-18, 1e-13, 6):
+    s['E0FieldStrength'] = e_field
     for dist in dist_range:
         s['DipolePosition'] = '0. 0. '+str(-0.5 * s['ChamberHeight'] - dist)
         rid_list += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
@@ -174,4 +204,5 @@ for dip_str in srkmisc.even_sample_over_log(1e-18, 1e-13, 6):
 rid_chunks = [rid_list[x:x+len(dist_range)] for x in xrange(0, len(rid_list), len(dist_range))]
 for i in rid_chunks:
     srkdata.make_macro_mult_from_database(i)
-    srkdata.run_macro_mult_laptop(i)
+    # srkdata.run_macro_local(i)
+

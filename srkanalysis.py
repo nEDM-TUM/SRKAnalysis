@@ -10,7 +10,7 @@ import numpy
 __author__ = 'mjbales'
 
 
-def calc_stats_for_results_file(file_path, useWrapping=True):
+def calc_stats_for_results_file(file_path, use_wrapping = True):
     stats = srkdata.default_file_stats()
 
     if not srkmisc.file_exits_and_not_zombie(file_path):
@@ -31,7 +31,7 @@ def calc_stats_for_results_file(file_path, useWrapping=True):
 
     root_file.Close()
 
-    if useWrapping:
+    if use_wrapping:
         stats['PhiMean'] = srkmisc.reduce_periodics(phi_list)
         stats['ThetaMean'] = srkmisc.reduce_periodics(theta_list)
     else:
@@ -69,7 +69,7 @@ def calc_orientation_stats(run_id, is_parallel):
     else:
         letter = 'A'
         run_type = 'Anti'
-    file_path = srkdata.results_dir+"Results_RID"+str(run_id)+"_"+letter+".root"
+    file_path = srkdata.SRKSystems.results_dir+"Results_RID"+str(run_id)+"_"+letter+".root"
 
     stats = calc_stats_for_results_file(file_path)
 
@@ -129,7 +129,7 @@ def calc_run_stats(run_id):
 
 
 def check_user_info_tree(run_id,post_fix):
-    file_path=srkdata.results_dir+"Results_RID"+str(run_id)+"_"+post_fix+".root"
+    file_path=srkdata.SRKSystems.results_dir+"Results_RID"+str(run_id)+"_"+post_fix+".root"
     if not srkmisc.file_exits_and_not_zombie(file_path):
         print file_path + " doesn't exist or is zombie."
         return
@@ -144,7 +144,13 @@ def check_user_info_tree(run_id,post_fix):
 # From PHYSICAL REVIEW A 85, 042105 (2012)
 # returns stats related to this
 def calc_dipole_predictions_pignol_and_rocia(srk_settings):
+    out = dict()
+
     dip_str = srk_settings['DipoleFieldStrength']
+
+    if dip_str == 0:
+        return out
+
     pos = [float(x) for x in srk_settings['DipolePosition'] .split(' ')]  # Splits up space separates position list
     radius = srk_settings['ChamberRadius']
     height = srk_settings['ChamberHeight']
@@ -163,7 +169,6 @@ def calc_dipole_predictions_pignol_and_rocia(srk_settings):
     #          pow(pow(dist + height, 2) + radius * radius, -1.5) - pow(dist * dist + radius * radius, -1.5))
     # e_plus_one = -(4. / (radius * radius)) * (rho_b_sub_rho / db_dz)
     # print e_plus_one
-    out = dict()
     out['PRPrediction'] = false_edm
     if srk_settings['E0FieldStrength'] == 0.:
         out['PRPredictionDeltaOmega'] = 0.
