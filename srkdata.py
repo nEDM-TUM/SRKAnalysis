@@ -2,6 +2,7 @@ from subprocess import call
 import paramiko
 import sqlite3
 import srkanalysis
+import srkmisc
 
 __author__ = 'mjbales'
 
@@ -29,13 +30,15 @@ class SRKSystems:
         for line in f:
             if line[0] != '#':
                 command, value = line.split(' ')
+
                 if command == 'setComputer':
-                    SRKSystems.set_computer(self,value)
+                    SRKSystems.set_computer(self, value)
         f.close()
         SRKSystems.settings_file_read = True
         return
 
     def set_computer(self, value):
+
         SRKSystems.computer=value
         if SRKSystems.computer == 'work_laptop':
             SRKSystems.macro_dir = '/home/mjbales/work/nedm/macros/'
@@ -64,7 +67,7 @@ def default_srk_settings():
         'Use2D': 0,
         'ManualTracking': 0,
         'B0FieldStrength': 0.000001,
-        'E0FieldStrength': 10000000,
+        'E0FieldStrength': 1000000,
         'BGradFieldStrength': 0,
         'DipoleFieldStrength': 0,
         'ChamberRadius': 0.235,
@@ -146,9 +149,11 @@ def merge_dicts(*dict_args):
 def make_macro_mult_from_database(run_ids):
     srk_sys = SRKSystems()
     srk_sys.read_settings_file()
-    rid_str = "".join([str(x)+'_' for x in run_ids])[:-1]
+    rid_str = str(run_ids[0])+"_thru_"+str(run_ids[-1])
     macro_file_path = SRKSystems.macro_dir + 'RID' + rid_str + '.mac'
     f = open(macro_file_path, 'w')
+
+    f.write('setDefaultResultsDir '+SRKSystems.results_dir + '\n')
 
     first = True
     for run_id in run_ids:
@@ -159,6 +164,7 @@ def make_macro_mult_from_database(run_ids):
         else:
             first = False
         f.write('#' + str(run_settings) + '\n')
+
         f.write('setRunID RID' + str(run_id) + '\n')
 
         for setting in srk_settings.keys():
@@ -388,16 +394,27 @@ def run_macro_optima(rid_numbers):
 
     run_command_optima(command)
 
-def run_macro_local(rid_numbers):
-    rid_str = "".join([str(x)+'_' for x in rid_numbers])[:-1]
-    run_macro_laptop(rid_str)
 
-def run_macro_laptop(rid_number):
+def run_mult_macro_local(run_ids):
+    rid_str = str(run_ids[0])+"_thru_"+str(run_ids[-1])
+    run_macro_local(rid_str)
+
+
+def run_macro_local(rid_number):
     srk_sys = SRKSystems()
     srk_sys.read_settings_file()
 
-    command = 'nohup ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
-    command += ' > ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt&'
+    command = ''
+    if srk_sys.os == 'Linux':
+        command += 'nohup ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
+        command += ' > ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt&'
+    elif srk_sys.os == 'Windows':
+        command += 'start cmd /c ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
+        command += ' ^> ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt'
+    else:
+        print "Operating system not recognized."
+        return
+
     print command
 
     call(command, shell=True)
@@ -483,3 +500,18 @@ def get_plot_data_from_database(rids_for_many_graphs, column_x, column_y):
     db_connection.close()
 
     return x_out, y_out
+
+
+def make_macros_steyerl_and_add_to_database(srk_settings, run_settings, start_Omega, end_Omega, num_Omega, approx_fixed_reflections=0.):
+    Omega_range = srkmisc.even_sample_over_log(start_Omega, end_Omega, num_Omega)
+    rid_list=[]
+    for Omega in Omega_range:
+        srk_settings['MeanVel'] = srkanalysis.calc_mean_vel_from_Omega(
+            Omega, srk_settings['B0FieldStrength']*srk_settings['GyromagneticRatio'], srk_settings['ChamberRadius'])
+        if approx_fixed_reflections > 0.:
+            srk_settings['TimeLimit'] = approx_fixed_reflections * 0.75 / abs(srk_settings['MeanVel'])
+        rid_list += [add_to_database(merge_dicts(srk_settings, run_settings))]
+
+    make_macro_mult_from_database(rid_list)
+
+    return rid_list

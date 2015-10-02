@@ -141,6 +141,22 @@ def check_user_info_tree(run_id,post_fix):
     return
 
 
+def calc_centered_rho_b_sub_rho(dip_str, radius, height, dist):
+    return ((2. * dip_str) / (radius * radius * height)) * (
+        2. * height + ((radius * radius + 2. * dist * dist) / math.sqrt(radius * radius + dist * dist)) - (
+            (radius * radius + 2. * pow(dist + height, 2)) / math.sqrt(radius * radius + pow(dist + height, 2))))
+
+
+def calc_centered_db_dz(dip_str, radius, height, dist):
+    return ((2. * dip_str) / height) * (
+        pow(pow(dist + height, 2) + radius * radius, -1.5) - pow(dist * dist + radius * radius, -1.5))
+
+
+def calc_e_plus_one(dip_str, radius, height, dist):
+    return -(4. / (radius * radius)) * (calc_centered_rho_b_sub_rho(dip_str, radius, height, dist)
+        / calc_centered_db_dz(dip_str, radius, height, dist))
+
+
 # From PHYSICAL REVIEW A 85, 042105 (2012)
 # returns stats related to this
 def calc_dipole_predictions_pignol_and_rocia(srk_settings):
@@ -159,16 +175,8 @@ def calc_dipole_predictions_pignol_and_rocia(srk_settings):
     cspeed = 299792458
     hbar = 6.582E-016
 
-    rho_b_sub_rho = ((2. * dip_str) / (radius * radius * height)) * (
-        2. * height + ((radius * radius + 2. * dist * dist) / math.sqrt(radius * radius + dist * dist)) - (
-        (radius * radius + 2. * pow(dist + height, 2)) / math.sqrt(radius * radius + pow(dist + height, 2))))
+    false_edm = -(hbar * gyro * gyro / (2 * cspeed * cspeed)) * calc_centered_rho_b_sub_rho(dip_str, radius, height, dist) * 100
 
-    false_edm = -(hbar * gyro * gyro / (2 * cspeed * cspeed)) * rho_b_sub_rho * 100
-
-    # db_dz = ((2. * dip_str) / height) * (
-    #          pow(pow(dist + height, 2) + radius * radius, -1.5) - pow(dist * dist + radius * radius, -1.5))
-    # e_plus_one = -(4. / (radius * radius)) * (rho_b_sub_rho / db_dz)
-    # print e_plus_one
     out['PRPrediction'] = false_edm
     if srk_settings['E0FieldStrength'] == 0.:
         out['PRPredictionDeltaOmega'] = 0.
@@ -176,3 +184,48 @@ def calc_dipole_predictions_pignol_and_rocia(srk_settings):
         out['PRPredictionDeltaOmega'] = false_edm / (100. * hbar / (4. * srk_settings['E0FieldStrength']))
     out['PRPredictionDeltaPhase'] = out['PRPredictionDeltaOmega']*srk_settings['TimeLimit']
     return out
+
+
+def calc_dipole_b_field(dipole_str,pos_vec,dipole_vec=(0., 0., 1.)):
+    r = math.sqrt(pos_vec[0] * pos_vec[0] + pos_vec[1] * pos_vec[1] + pos_vec[2] * pos_vec[2])
+    r3inv = 1. / (r * r * r)
+    r5inv = r3inv / (r * r)
+    m_dot_r = 3. * r5inv * (dipole_vec[0] * pos_vec[0] + dipole_vec[1] * pos_vec[1] + dipole_vec[2] * pos_vec[2])
+    b_field = [0., 0., 0.]
+    b_field[0] += dipole_str * (pos_vec[0] * m_dot_r - dipole_vec[0] * r3inv)
+    b_field[1] += dipole_str * (pos_vec[1] * m_dot_r - dipole_vec[1] * r3inv)
+    b_field[2] += dipole_str * (pos_vec[2] * m_dot_r - dipole_vec[2] * r3inv)
+    return b_field
+
+
+def get_dipole_pos_from_dist(dist_from_bottom, chamber_height):
+    return '0. 0. '+str(-0.5 * chamber_height - dist_from_bottom)
+
+
+def get_dist_bottom_from_pos(dip_pos, chamber_height):
+    return 0.5 * chamber_height + dip_pos.split(' ')[2]
+
+
+# Presumes centered dipole for now
+def get_dipole_str_to_match_field(dist_from_bottom, normalize_val, normalize_type):
+
+    if normalize_type == "MaxBFieldCentered":
+        return 0.5 * normalize_val * dist_from_bottom * dist_from_bottom * dist_from_bottom
+    else:
+        print "Normalize type not recognized"
+        return None
+
+
+def calc_mean_vel_from_Omega(Omega, omega0, chamber_radius):
+    omega_r = Omega * omega_0
+    return abs(omega_r*chamber_radius)
+
+
+def calc_Omega(run_id):
+    srk_settings, run_settings = srkdata.get_settings_from_database(run_id)
+
+    omega_0 = srk_settings['B0FieldStrength']*srk_settings['GyromagneticRatio']
+    omega_r = srk_settings['MeanVel']/srk_settings['ChamberRadius']
+    return omega_r/omega_0
+
+
