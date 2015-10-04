@@ -91,7 +91,7 @@ def calc_run_stats(run_id):
     a_stats = calc_orientation_stats(run_id, False)
 
     if len(p_stats) == 0 or len(a_stats) == 0:
-        return {}
+        return srkdata.merge_dicts( p_stats, a_stats)
 
     run_stats = srkdata.default_delta_omega_stats()
 
@@ -216,7 +216,7 @@ def get_dipole_str_to_match_field(dist_from_bottom, normalize_val, normalize_typ
         return None
 
 
-def calc_mean_vel_from_Omega(Omega, omega0, chamber_radius):
+def calc_mean_vel_from_Omega(Omega, omega_0, chamber_radius):
     omega_r = Omega * omega_0
     return abs(omega_r*chamber_radius)
 

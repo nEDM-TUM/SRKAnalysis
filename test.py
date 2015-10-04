@@ -244,7 +244,7 @@ today = date.today()
 
 ###################################################
 ## 2D simulation of linear gradient
-
+#
 # s = srkdata.default_srk_settings()
 # r = srkdata.default_run_settings()
 #
@@ -256,17 +256,16 @@ today = date.today()
 # s['Use2D'] = 1
 # s['TimeLimit'] = 1.
 # s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 1.e6
 #
+# run_ids = []
 # for gradient in [1.e-10, 1.e-9, 1.e-8]:
 #     s['BGradFieldStrength'] = gradient
-#     srkdata.make_macros_steyerl_and_add_to_database(s, r, .1, 10, 100)
-
-# srkdata.make_macro_mult_from_database(range(717, 817))
-# srkdata.make_macro_mult_from_database(range(817, 917))
-# srkdata.make_macro_mult_from_database(range(917, 1017))
-# srkdata.run_mult_macro_local(range(717,817))
-# srkdata.run_mult_macro_local(range(817,917))
-# srkdata.run_mult_macro_local(range(917,1017))
+#     run_ids += [srkdata.make_macros_steyerl_and_add_to_database(s, r, .1, 10, 100)]
+#
+# for x in run_ids:
+#     srkdata.make_macro_mult_from_database(x)
+#     srkdata.run_mult_macro_local(x)
 
 # for i in xrange(585, 1017):
 #     srkdata.calc_run_stats_to_database(i)
@@ -284,6 +283,7 @@ today = date.today()
 # s['Use2D'] = 1
 # s['TimeLimit'] = 1.
 # s['DiffuseReflectionProb'] = 0
+# s['E0FieldStrength'] = 1.e6
 #
 # run_ids = []
 # for gradient in [1.e-10, 1.e-9, 1.e-8]:
@@ -294,5 +294,32 @@ today = date.today()
 #     srkdata.make_macro_mult_from_database(x)
 #     srkdata.run_mult_macro_local(x)
 
-for i in xrange(1017, 1317):
+# for i in xrange(1317, 1916):
+#     srkdata.calc_run_stats_to_database(i)
+
+
+###################################################
+## Normalize max magnetic field - edge
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+
+# r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Vary Max B Field at edge'
+# s['E0FieldStrength'] = 1.e6
+# s['DipolePosition'] = '.235 0 .061'
+
+# for max_b_field in srkmisc.even_sample_over_log(1e-9, 1e-7, 3):
+#     s['DipoleFieldStrength'] = max_b_field
+#     rid = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+    # srkdata.run_macro_local(rid)
+
+# for rid in range(1919, 1920):
+#     srkdata.make_macro(rid,s,r)
+#     srkdata.run_macro_local(rid)
+
+for i in xrange(1917, 1920):
     srkdata.calc_run_stats_to_database(i)
