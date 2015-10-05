@@ -31,6 +31,8 @@ def calc_stats_for_results_file(file_path, use_wrapping = True):
 
     root_file.Close()
 
+
+
     if use_wrapping:
         stats['PhiMean'] = srkmisc.reduce_periodics(phi_list)
         stats['ThetaMean'] = srkmisc.reduce_periodics(theta_list)
@@ -90,6 +92,9 @@ def calc_run_stats(run_id):
     p_stats = calc_orientation_stats(run_id, True)
     a_stats = calc_orientation_stats(run_id, False)
 
+    if len(p_stats) > 0 or len(a_stats) > 0:
+        p_stats['DipolePositionBelowChamber']=get_dist_bottom_from_pos(srk_settings['DipolePosition'],
+                                                                       srk_settings['ChamberHeight'])
     if len(p_stats) == 0 or len(a_stats) == 0:
         return srkdata.merge_dicts( p_stats, a_stats)
 
@@ -203,7 +208,7 @@ def get_dipole_pos_from_dist(dist_from_bottom, chamber_height):
 
 
 def get_dist_bottom_from_pos(dip_pos, chamber_height):
-    return 0.5 * chamber_height + dip_pos.split(' ')[2]
+    return 0.5 * chamber_height + float(dip_pos.split(' ')[2])
 
 
 # Presumes centered dipole for now

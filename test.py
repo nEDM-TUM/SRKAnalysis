@@ -321,5 +321,96 @@ today = date.today()
 #     srkdata.make_macro(rid,s,r)
 #     srkdata.run_macro_local(rid)
 
-for i in xrange(1917, 1920):
-    srkdata.calc_run_stats_to_database(i)
+# for i in xrange(1917, 1920):
+#     srkdata.calc_run_stats_to_database(i)
+
+
+###################################################
+## Normalize max magnetic field
+#
+# dist_range = np.concatenate([[.001], np.arange(.01, .11, .01)])
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Vary Max B Field and Distance'
+# s['E0FieldStrength'] = 5.e5
+#
+#
+# rid_list = []
+# for max_b_field in srkmisc.even_sample_over_log(1e-9, 1e-7, 6):
+#     s['DipoleFieldStrength'] = max_b_field
+#     for dist in dist_range:
+#         s['DipolePosition'] = srkanalysis.get_dipole_pos_from_dist(dist, s['ChamberHeight'])
+#         rid_list += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+#
+# rid_chunks = [rid_list[x:x+len(dist_range)] for x in xrange(0, len(rid_list), len(dist_range))]
+# for i in rid_chunks:
+#     srkdata.make_macro_mult_from_database(i)
+#     srkdata.run_mult_macro_local(i)
+
+
+###################################################
+## Diffuse Omega Vary Dipole
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# r['Title'] = '3D Diffuse, Vary Omega Dipole 1mm'
+# s['Use2D'] = 0
+# s['TimeLimit'] = 1.
+# s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 1.e6
+# s['DipolePosition'] = '0. 0. 0.061'
+#
+# run_ids = []
+# for dipoleStr in [1.e-18, 1.e-16, 1.e-14]:
+#     s['DipoleFieldStrength'] = dipoleStr
+#     run_ids += [srkdata.make_macros_steyerl_and_add_to_database(s, r, .1, 10, 100)]
+#
+# for x in run_ids:
+#     srkdata.make_macro_mult_from_database(x)
+#     # srkdata.run_mult_macro_local(x)
+#
+# # for i in xrange(585, 1017):
+# #     srkdata.calc_run_stats_to_database(i)
+
+###################################################
+## Diffuse Omega Vary Gradient 3D
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = '3D Specular, Linear Gradients'
+# s['Use2D'] = 0
+# s['TimeLimit'] = 1.
+# s['DiffuseReflectionProb'] = 0.
+# s['E0FieldStrength'] = 1.e6
+#
+# run_ids = []
+# for gradient in [1.e-10, 1.e-9, 1.e-8]:
+#     s['BGradFieldStrength'] = gradient
+#     run_ids += [srkdata.make_macros_steyerl_and_add_to_database(s, r, .1, 10, 100)]
+#
+# for x in run_ids:
+#     srkdata.make_macro_mult_from_database(x)
+#     srkdata.run_mult_macro_local(x)
+
+# for i in xrange(2486, 2886):
+#     srkdata.calc_run_stats_to_database(i)
+
+# for i in range(1986,2487,100):
+#     srkdata.run_mult_macro_local(range(i,i+100))
