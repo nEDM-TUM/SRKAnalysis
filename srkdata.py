@@ -193,6 +193,7 @@ def make_macro(run_id, srk_settings, run_settings):
 
     f.write('#' + str(run_settings) + '\n')
     f.write('setRunID RID' + str(run_id) + '\n')
+    f.write('setDefaultResultsDir '+SRKSystems.results_dir + '\n')
 
     for setting in srk_settings.keys():
         f.write('set' + setting + ' ' + str(srk_settings[setting]) + '\n')

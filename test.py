@@ -414,3 +414,32 @@ today = date.today()
 
 # for i in range(1986,2487,100):
 #     srkdata.run_mult_macro_local(range(i,i+100))
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+
+######
+##Long term desktop
+#######################
+#
+s = srkdata.default_srk_settings()
+r = srkdata.default_run_settings()
+r['SRKVersion'] = 'ea49998fff39515da5439bb86ec80c743e3d5d5e'
+r['Date'] = today.strftime('%m/%d/%y')
+r['RunType'] = 'deltaOmega'
+r['NumTracksPer'] = 500000
+r['Title'] = 'Fixed Chamber Height, Dipole Shifts'
+s['E0FieldStrength'] = 5e6
+#
+# dist_range = np.arange(.01, .03, .01)
+# for dist in dist_range:
+#     s['DipolePosition'] = '0. 0. '+str(-0.5 * s['ChamberHeight'] - dist)
+#     rid = srkdata.make_macro_and_add_to_database(s, r)
+#     srkdata.run_macro_local(rid)
+
+distances =[0.01,.02]
+rids=[2886,2887]
+for i in [0, 1]:
+    s['DipolePosition'] = '0. 0. '+str(-0.5 * s['ChamberHeight'] - distances[i])
+    srkdata.make_macro(rids[i],s,r)
+    srkdata.run_macro_local(rids[i])
