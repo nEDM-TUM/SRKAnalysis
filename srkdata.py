@@ -3,14 +3,18 @@ import paramiko
 import sqlite3
 import srkanalysis
 import srkmisc
+from ROOT import gRandom
 
 __author__ = 'mjbales'
 
 
 class SRKSystems:
     macro_dir = '/home/mjbales/work/nedm/macros/'
+    graphs_dir = '/home/mjbales/work/nedm/graphs/'
+    hists_dir = '/home/mjbales/work/nedm/hists/'
     results_dir = '/home/mjbales/work/nedm/results/'
     logs_dir = '/home/mjbales/work/nedm/logs/'
+    tracks_dir = '/data/nedm/tracks/'
     srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
     database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
     database_runlog_table_name = 'RunLog'
@@ -44,18 +48,22 @@ class SRKSystems:
             SRKSystems.macro_dir = '/home/mjbales/work/nedm/macros/'
             SRKSystems.results_dir = '/home/mjbales/work/nedm/results/'
             SRKSystems.logs_dir = '/home/mjbales/work/nedm/logs/'
+            SRKSystems.graphs_dir = '/home/mjbales/work/nedm/graphs/'
+            SRKSystems.hists_dir = '/home/mjbales/work/nedm/hists/'
             SRKSystems.srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
+            SRKSystems.tracks_dir = '/data/nedm/tracks/'
             SRKSystems.database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
             SRKSystems.os = 'Linux'
         elif SRKSystems.computer == 'home_desktop':
             SRKSystems.macro_dir = 'D:\\work\\nedm\\macros\\'
             SRKSystems.results_dir = 'D:\\work\\nedm\\results\\'
+            SRKSystems.graphs_dir = 'D:\\work\\nedm\\graphs\\'
+            SRKSystems.hists_dir = 'D:\\work\\nedm\\hists\\'
             SRKSystems.logs_dir = 'D:\\work\\nedm\\logs\\'
             SRKSystems.srk_path = 'D:\\work\\code\\SRK\\Release\\SRK.exe'
+            SRKSystems.tracks_dir = 'D:\\work\\nedm\\tracks\\'
             SRKSystems.database_path = 'D:\\work\\code\\SRKAnalysis\\nedmAnalysis.sqlite'
             SRKSystems.os = 'Windows'
-
-
 
 
 # Default settings for macro files for SRK
@@ -65,6 +73,7 @@ def default_srk_settings():
         'UseAltStepping': 0,
         'ConstStepper': 0,
         'Use2D': 0,
+        'AdditionalRandomVelZ': 0.,
         'ManualTracking': 0,
         'B0FieldStrength': 0.000001,
         'E0FieldStrength': 1000000,
@@ -156,6 +165,8 @@ def make_macro_mult_from_database(run_ids):
     f.write('setDefaultResultsDir '+SRKSystems.results_dir + '\n')
 
     first = True
+    gRandom.SetSeed(0)
+
     for run_id in run_ids:
         srk_settings, run_settings = get_settings_from_database(run_id)
 
@@ -171,6 +182,9 @@ def make_macro_mult_from_database(run_ids):
             f.write('set' + setting + ' ' + str(srk_settings[setting]) + '\n')
 
         if run_settings['RunType'] == 'deltaOmega':
+            f.write('trackSpinsDeltaOmega ' + str(run_settings['NumTracksPer']))
+        elif run_settings['RunType'] == 'deltaOmegaSame':
+            f.write('setRandomSeed ' + str(gRandom.Integer(1000000))+'\n')
             f.write('trackSpinsDeltaOmega ' + str(run_settings['NumTracksPer']))
         elif run_settings['RunType'] == 'parOnly':
             f.write('setParallelFields 1'+'\n')
@@ -200,6 +214,8 @@ def make_macro(run_id, srk_settings, run_settings):
 
     if run_settings['RunType'] == 'deltaOmega':
         f.write('trackSpinsDeltaOmega ' + str(run_settings['NumTracksPer']))
+    elif run_settings['RunType'] == 'makeTracks':
+        f.write('makeTracks '+str(run_settings['NumTracksPer']))
     elif run_settings['RunType'] == 'parOnly':
         f.write('setParallelFields 1'+'\n')
         f.write('setResultsFilePath ' + SRKSystems.results_dir + "Results_RID" + str(run_id) + "_P.root"+'\n')
@@ -302,14 +318,21 @@ def get_data_for_rids_from_database(run_ids, columns_str, db_connection=None):
 
     db_cursor = db_connection.cursor()
 
+    # where_str =' WHERE'
+    # for x in run_ids[:-1]:
+    #     where_str += ' Run =' + str(x) + ' OR '
+    # where_str += ' Run =' + str(run_ids[-1])
+    #
+    # select_str = 'SELECT ' + columns_str + ' FROM ' + SRKSystems.database_runlog_table_name+where_str
+    # db_cursor.execute(select_str)
+    # values_from_select = db_cursor.fetchall()
+    values_from_select=[]
     where_str =' WHERE'
-    for x in run_ids[:-1]:
-        where_str += ' Run =' + str(x) + ' OR '
-    where_str += ' Run =' + str(run_ids[-1])
-
-    select_str = 'SELECT ' + columns_str + ' FROM ' + SRKSystems.database_runlog_table_name+where_str
-    db_cursor.execute(select_str)
-    values_from_select = db_cursor.fetchall()
+    for x in run_ids:
+        where_str = ' WHERE Run =' + str(x) + ' '
+        select_str = 'SELECT ' + columns_str + ' FROM ' + SRKSystems.database_runlog_table_name+where_str
+        db_cursor.execute(select_str)
+        values_from_select.append(db_cursor.fetchall()[0])
 
     if not database_was_open:
         db_connection.commit()
@@ -401,16 +424,22 @@ def run_mult_macro_local(run_ids):
     run_macro_local(rid_str)
 
 
-def run_macro_local(rid_number):
+def run_macro_local(rid_number, wait=False):
     srk_sys = SRKSystems()
     srk_sys.read_settings_file()
 
     command = ''
     if srk_sys.os == 'Linux':
-        command += 'nohup ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
-        command += ' > ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt&'
+        if not wait:
+            command += 'nohup '
+        command += SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
+        command += ' > ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt'
+        if not wait:
+            command += '&'
     elif srk_sys.os == 'Windows':
-        command += 'start cmd /c ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
+        if not wait:
+            command += 'start cmd /c '
+        command += SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(rid_number) + '.mac'
         command += ' ^> ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt'
     else:
         print "Operating system not recognized."
@@ -431,28 +460,6 @@ def run_on_optima(srk_settings, run_settings):
     run_macro_optima([run_id])
     return run_id
 
-
-def fix_dipole_positions_in_table(first, last):
-    srk_sys = SRKSystems()
-    srk_sys.read_settings_file()
-    db_connection = sqlite3.connect(SRKSystems.database_path)
-    db_cursor = db_connection.cursor()
-    where_str = ' WHERE Run >= ' + str(first) + ' AND Run <= ' + str(last)
-    select_command = 'SELECT DipolePositionBelowChamber FROM ' + SRKSystems.database_runlog_table_name + where_str
-    db_cursor.execute(select_command, ())
-    position_below = db_cursor.fetchall()
-
-    dipole_positions = []
-    for i in position_below:
-        dipole_positions += [('0. 0. '+str(i[0]),)]
-
-    update_command = 'UPDATE ' + SRKSystems.database_runlog_table_name + ' SET DipolePosition=?' + where_str+';'
-    db_cursor.executemany(update_command,dipole_positions)
-
-    db_connection.commit()
-    db_connection.close()
-
-
 def execute_runlog_command(command, value_tuple):
     srk_sys = SRKSystems()
     srk_sys.read_settings_file()
@@ -466,21 +473,21 @@ def execute_runlog_command(command, value_tuple):
 
 
 def prefix_dict_keys(inp, prefix):
-    out={}
+    out = {}
     for x in inp.keys():
-        out[prefix + x]=inp[x]
+        out[prefix + x] = inp[x]
     return out
 
 
 def calc_run_stats_to_database(run_id):
     all_stats = srkanalysis.calc_run_stats(run_id)
-    where_str = "Run="+str(run_id)
+    where_str = "Run=" + str(run_id)
     update_database(all_stats, where_str)
 
 
 def calc_orientation_stats_to_database(run_id, is_parallel):
     stats = srkanalysis.calc_orientation_stats(run_id, is_parallel)
-    where_str = "Run="+str(run_id)
+    where_str = "Run=" + str(run_id)
     update_database(stats, where_str)
 
 
@@ -493,7 +500,7 @@ def get_plot_data_from_database(rids_for_many_graphs, column_x, column_y):
     x_out = []
     y_out = []
     for rids_one_graph in rids_for_many_graphs:
-        single_line_data = get_data_for_rids_from_database(rids_one_graph, column_x+', '+column_y, db_connection)
+        single_line_data = get_data_for_rids_from_database(rids_one_graph, column_x + ', ' + column_y, db_connection)
         x, y = zip(*single_line_data)
         x_out.append(x)
         y_out.append(y)
@@ -502,17 +509,89 @@ def get_plot_data_from_database(rids_for_many_graphs, column_x, column_y):
 
     return x_out, y_out
 
+def get_plot_data_from_database_mult(rids_for_many_graphs, columns):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    db_connection = sqlite3.connect(SRKSystems.database_path)
 
-def make_macros_steyerl_and_add_to_database(srk_settings, run_settings, start_Omega, end_Omega, num_Omega, approx_fixed_reflections=0.):
+    columns_string = [j+',' for j in columns]
+    columns_string = ''.join(columns_string)[:-1]
+
+    data_out = []
+    for rids_one_graph in rids_for_many_graphs:
+        single_line_data = get_data_for_rids_from_database(rids_one_graph, columns_string, db_connection)
+        x = zip(*single_line_data)
+        data_out.append(x)
+
+    db_connection.close()
+
+    return data_out
+
+
+def make_macros_steyerl_and_add_to_database(srk_settings, run_settings, start_Omega, end_Omega, num_Omega,
+                                            approx_fixed_reflections=0.):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+
     Omega_range = srkmisc.even_sample_over_log(start_Omega, end_Omega, num_Omega)
-    rid_list=[]
-    for Omega in Omega_range:
+    rid_list = []
+    for i in xrange(num_Omega):
         srk_settings['MeanVel'] = srkanalysis.calc_mean_vel_from_Omega(
-            Omega, srk_settings['B0FieldStrength']*srk_settings['GyromagneticRatio'], srk_settings['ChamberRadius'])
+            Omega_range[i], srk_settings['B0FieldStrength'] * srk_settings['GyromagneticRatio'],
+            srk_settings['ChamberRadius'])
         if approx_fixed_reflections > 0.:
             srk_settings['TimeLimit'] = approx_fixed_reflections * 0.75 / abs(srk_settings['MeanVel'])
+        if srk_settings['TrackFilePath'] != '!dynamic':
+            srk_settings['TrackFilePath'] = srk_sys.tracks_dir + get_track_file_name(i, srk_settings)
         rid_list += [add_to_database(merge_dicts(srk_settings, run_settings))]
+
 
     make_macro_mult_from_database(rid_list)
 
     return rid_list
+
+
+def make_track_file(num_tracks, srk_settings):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    make_macro("makeTracks", srk_settings, {"NumTracksPer": num_tracks, "RunType": "makeTracks"})
+    print "Making" + srk_settings['TrackFilePath']
+    run_macro_local("makeTracks", True)
+
+def make_tracks_for_omega(num_tracks, srk_settings, start_Omega, end_Omega, num_Omega, special_title=""):
+    srk_sys = SRKSystems()
+    srk_sys.read_settings_file()
+    Omega_range = srkmisc.even_sample_over_log(start_Omega, end_Omega, num_Omega)
+    for i in xrange(num_Omega):
+        srk_settings['MeanVel'] = srkanalysis.calc_mean_vel_from_Omega(
+            Omega_range[i], srk_settings['B0FieldStrength'] * srk_settings['GyromagneticRatio'],
+            srk_settings['ChamberRadius'])
+        srk_settings['TrackFilePath'] = srk_sys.tracks_dir + get_track_file_name(i, srk_settings, special_title)
+
+        make_track_file(num_tracks, srk_settings)
+
+
+
+def get_track_file_name(id_num, srk_settings, special_title=""):
+    name = "Tracks_"
+
+    name += special_title
+
+    if srk_settings['Use2D']:
+        name += "2D_"
+    else:
+        name += "3D_"
+
+    if srk_settings['DiffuseReflectionProb'] == 1.:
+        name += "Diffuse_"
+    elif srk_settings['DiffuseReflectionProb'] == 0.:
+        name += "Specular_"
+    else:
+        name += "Diffuse" + "{:.0f}".format(srk_settings['DiffuseReflectionProb']) + "_"
+
+    name += "{:.0f}".format(srk_settings['TimeLimit']) + "s_"
+
+    name += "ID" + str(id_num)
+    name += ".root"
+
+    return name

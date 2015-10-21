@@ -1,4 +1,5 @@
-from ROOT import TFile, TTree, gDirectory, gROOT
+from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D
+import ROOT
 import srkdata
 import srkmisc
 import math
@@ -28,10 +29,7 @@ def calc_stats_for_results_file(file_path, use_wrapping = True):
         hit_tree.GetEntry(i)
         phi_list.append(hit_tree.phi)
         theta_list.append(hit_tree.theta)
-
     root_file.Close()
-
-
 
     if use_wrapping:
         stats['PhiMean'] = srkmisc.reduce_periodics(phi_list)
@@ -39,6 +37,11 @@ def calc_stats_for_results_file(file_path, use_wrapping = True):
     else:
         stats['PhiMean'] = srkmisc.careful_mean(phi_list)
         stats['ThetaMean'] = srkmisc.careful_mean(theta_list)
+
+    stats['SZDetProb'] = 0.
+    for phi, theta in zip(phi_list, theta_list):
+        stats['SZDetProb'] += calc_opposite_spin_prob(phi - stats['PhiMean'], theta)
+    stats['SZDetProb'] /= stats['NumEventsRun']
 
     stats['PhiStDev'] = srkmisc.careful_std(phi_list)
     stats['ThetaStDev'] = srkmisc.careful_std(theta_list)
@@ -86,26 +89,72 @@ def calc_orientation_stats(run_id, is_parallel):
     return srkdata.merge_dicts(stats,pr_stats)
 
 
-def calc_run_stats(run_id):
+def calc_delta_stats_same_tracks(run_id, use_wrapping=True):
+    srk_sys = srkdata.SRKSystems()
+    srk_sys.read_settings_file()
 
+    hit_trees=[]
+    root_files=[]
+    for is_parallel in [True,False]:
+        if is_parallel:
+            letter = 'P'
+            run_type = 'Par'
+        else:
+            letter = 'A'
+            run_type = 'Anti'
+        file_path = srk_sys.results_dir+"Results_RID"+str(run_id)+"_"+letter+".root"
+
+        if not srkmisc.file_exits_and_not_zombie(file_path):
+            print file_path + " doesn't exist or is zombie."
+            return {}
+
+        root_files.append(TFile(file_path, "READ"))
+        hit_trees.append(gDirectory.Get('hitTree'))
+
+    gROOT.cd()
+
+    delta_phi_list = []
+    for i in xrange(hit_trees[0].GetEntries()):
+        hit_trees[0].GetEntry(i)
+        hit_trees[1].GetEntry(i)
+        delta_phi=hit_trees[0].phi-hit_trees[1].phi
+        delta_phi_list.append(delta_phi)
+    if use_wrapping:
+        delta_phi_mean = srkmisc.reduce_periodics(delta_phi_list)
+    else:
+        delta_phi_mean = srkmisc.careful_mean(delta_phi_list)
+    delta_phi_std = srkmisc.careful_std(delta_phi_list)
+    root_files[0].Close()
+    root_files[1].Close()
+    return [delta_phi_mean, delta_phi_std]
+
+
+def calc_run_stats(run_id):
     srk_settings, run_settings = srkdata.get_settings_from_database(run_id)
     p_stats = calc_orientation_stats(run_id, True)
     a_stats = calc_orientation_stats(run_id, False)
 
     if len(p_stats) > 0 or len(a_stats) > 0:
-        p_stats['DipolePositionBelowChamber']=get_dist_bottom_from_pos(srk_settings['DipolePosition'],
-                                                                       srk_settings['ChamberHeight'])
+        p_stats['DipolePositionBelowChamber'] = get_dist_bottom_from_pos(srk_settings['DipolePosition'],
+                                                                         srk_settings['ChamberHeight'])
     if len(p_stats) == 0 or len(a_stats) == 0:
-        return srkdata.merge_dicts( p_stats, a_stats)
+        return srkdata.merge_dicts(p_stats, a_stats)
 
     run_stats = srkdata.default_delta_omega_stats()
 
-    # ufloat - floats with uncertainty
-    p_phase = ufloat(p_stats['Par_PhiMean'], p_stats['Par_PhiError'])
-    a_phase = ufloat(a_stats['Anti_PhiMean'], a_stats['Anti_PhiError'])
+    if run_settings['RunType'] == 'deltaOmega':
+        # ufloat - floats with uncertainty
+        p_phase = ufloat(p_stats['Par_PhiMean'], p_stats['Par_PhiError'])
+        a_phase = ufloat(a_stats['Anti_PhiMean'], a_stats['Anti_PhiError'])
 
-    delta_phase = p_phase - a_phase
-    print str(run_id)+":"
+        delta_phase = p_phase - a_phase
+    elif run_settings['RunType'] == 'deltaOmegaSame':
+        dp = calc_delta_stats_same_tracks(run_id)
+        delta_phase = ufloat(dp[0], dp[1] / run_settings['NumTracksPer'])
+    else:
+        return srkdata.merge_dicts(p_stats, a_stats)
+
+    print str(run_id) + ":"
     print "Delta Phase: " + str(delta_phase)
 
     delta_omega = delta_phase / srk_settings['TimeLimit']
@@ -114,7 +163,7 @@ def calc_run_stats(run_id):
     if srk_settings['E0FieldStrength'] == 0.:
         false_edm = ufloat(0., 0.)
     else:
-        false_edm = delta_omega * (100. * 6.58211928E-016 / (4 * srk_settings['E0FieldStrength']))
+        false_edm = calc_false_edm(delta_omega, srk_settings['E0FieldStrength'])
     print "False EDM: " + str(false_edm)
 
     run_stats['DeltaPhase'] = delta_phase.nominal_value
@@ -124,7 +173,7 @@ def calc_run_stats(run_id):
     run_stats['FalseEDM'] = false_edm.nominal_value
     run_stats['FalseEDMError'] = false_edm.std_dev
 
-    pos = [float(x) for x in srk_settings['DipolePosition'] .split(' ')]  # Splits up space separates position list
+    pos = [float(x) for x in srk_settings['DipolePosition'].split(' ')]  # Splits up space separates position list
     run_stats['DipolePositionBelowChamber'] = pos[2] + srk_settings['ChamberHeight']
     run_stats['DipolePositionX'] = pos[0]
 
@@ -206,9 +255,9 @@ def calc_dipole_b_field(dipole_str,pos_vec,dipole_vec=(0., 0., 1.)):
 def get_dipole_pos_from_dist(dist_from_bottom, chamber_height):
     return '0. 0. '+str(-0.5 * chamber_height - dist_from_bottom)
 
-
+1
 def get_dist_bottom_from_pos(dip_pos, chamber_height):
-    return 0.5 * chamber_height + float(dip_pos.split(' ')[2])
+    return -0.5 * chamber_height + float(dip_pos.split(' ')[2])
 
 
 # Presumes centered dipole for now
@@ -234,3 +283,55 @@ def calc_Omega(run_id):
     return omega_r/omega_0
 
 
+# Returns value in e cm
+def calc_false_edm(delta_omega, e_field):
+    return delta_omega * (100. * 6.58211928E-016 / (4 * e_field))
+
+
+# Presumes gaussian
+def convert_std_dev_to_false_edm_measurement_error(std_dev, e_field, meas_time, num_particles):
+    delta_omega_error=(std_dev/meas_time)/math.sqrt(num_particles)
+    return math.sqrt(2)*abs(calc_false_edm(delta_omega_error,e_field)) # sqrt 2 due to both par and anti par
+
+
+# Using phi and theta delta from central frequency
+def calc_opposite_spin_prob(phi, theta):
+    cos_phi = math.cos(phi)
+    cos_theta = math.cos(theta)
+    return 0.5 * (1. - cos_phi * cos_theta)
+
+
+def test_kurtosis(num_test):
+    data = []
+    for i in xrange(num_test):
+        data.append(gRandom.Gaus())
+    return kurtosis(data)
+
+
+def make_phi_hist_with_noise(rid, is_parallel, hist_dim, noise_stdev, normalize):
+    hist = TH1D("blurredHist"+str(rid),"blurredHist"+str(rid), hist_dim[0],hist_dim[1],hist_dim[2])
+    srk_sys = srkdata.SRKSystems()
+    srk_sys.read_settings_file()
+
+    if is_parallel:
+        letter = 'P'
+    else:
+        letter = 'A'
+    file_path = srkdata.SRKSystems.results_dir+"Results_RID"+str(rid)+"_"+letter+".root"
+
+    f = ROOT.TFile.Open(file_path)
+    phi_list=[]
+    for event in f.hitTree:
+        phi_list.append(gRandom.Gaus(event.phi, noise_stdev))
+
+    mean = srkmisc.reduce_periodics(phi_list)
+    stdev=srkmisc.careful_std(phi_list)
+    for x in phi_list:
+        if normalize:
+            hist.Fill((x-mean)/stdev)
+        else:
+            hist.Fill(x)
+
+    f.Close()
+    ROOT.SetOwnership(hist, True)
+    return hist

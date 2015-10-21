@@ -1,9 +1,13 @@
 import math
 import numpy as np
 import os.path
-from ROOT import TFile
+import csv
+import itertools
+from ROOT import TFile, TGraphErrors,gRandom
+from array import array
 
 __author__ = 'mjbales'
+
 
 
 def even_sample_over_log(start, stop, num_steps):
@@ -82,4 +86,109 @@ def file_exits_and_not_zombie(file_path):
         return False
 
 
+def chunk_list(the_list, chunks):
+    return [the_list[x:x+chunks] for x in xrange(0, len(the_list), chunks)]
+
+
+def flatten_list(the_list):
+    return [item for sub_list in the_list for item in sub_list]
+
+
+def delimited_text_to_TGraphErrors(file_path, delim='\t'):
+
+    f = open(file_path, 'rt')
+
+    line=f.readline()
+    if line.startswith("#"):
+        titles=line[1:]
+    else:
+        titles=file_path
+        f.seek(0)
+
+    x=[]
+    y=[]
+    xE=[]
+    yE=[]
+    data=[]
+    try:
+        test_columns, reader = itertools.tee(csv.reader(f, delimiter=delim))
+        columns = len(next(test_columns))
+        del test_columns
+        for a in reader:
+            data.append(a)
+        # if columns == 2:
+        #     for a,b in reader:
+        #         x.append(a)
+        #         y.append(b)
+        #         xE.append(0)
+        #         yE.append(0)
+        # elif columns == 3:
+        #     for a,b,c in reader:
+        #         x.append(a)
+        #         y.append(b)
+        #         yE.append(c)
+        #         xE.append(0)
+        # elif columns == 4:
+        #     for a,b,c,d in reader:
+        #         x.append(a)
+        #         y.append(b)
+        #         xE.append(c)
+        #         yE.append(d)
+    finally:
+        f.close()
+
+    if columns == 2:
+        a,b = zip(*data)
+        a=[float(i) for i in a]
+        b=[float(i) for i in b]
+        x=array("d", a)
+        y=array("d", b)
+        out_graph = TGraphErrors(len(x),x,y)
+
+    elif columns == 3:
+        a,b,c = zip(*data)
+        a=[float(i) for i in a]
+        b=[float(i) for i in b]
+        c=[float(i) for i in c]
+        x=array("d", a)
+        y=array("d", b)
+        yErr=array("d",c)
+        out_graph = TGraphErrors(len(x), x,y, ROOT.nullptr, yErr)
+
+    elif columns == 4:
+        a,b,c,d = zip(*data)
+        a=[float(i) for i in a]
+        b=[float(i) for i in b]
+        c=[float(i) for i in c]
+        d=[float(i) for i in d]
+        x=array("d", a)
+        y=array("d", b)
+        xErr=array("d",c)
+        yErr=array("d",d)
+        out_graph = TGraphErrors(len(x), x,y, xErr, yErr)
+    else:
+        print "Too many columns"
+        return None
+    out_graph.SetName(file_path.split('/')[-1])
+    out_graph.SetTitle(titles)
+    return out_graph
+
+
+def skip_comment_lines(opened_file,comment_delim='#'):
+    pos=opened_file.tell()
+    for line in file:
+        if line[0] != comment_delim:
+            opened_file.seek(pos)  # Go back
+            return
+        else:
+            pos=opened_file.tell()
+    return
+
+
+def gauss_noise_func(x,par):
+    return gRandom.Gaus(x[0], par[0])
+
+
+def get_hist_dim(hist):
+    return [hist.GetNbinsX(),hist.GetBinLowEdge(1),hist.GetBinWidth(hist.GetNbinsX()) + hist.GetBinLowEdge(hist.GetNbinsX())]
 
