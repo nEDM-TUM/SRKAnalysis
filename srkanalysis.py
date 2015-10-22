@@ -1,4 +1,4 @@
-from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D
+from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D, TF1
 import ROOT
 import srkdata
 import srkmisc
@@ -62,6 +62,17 @@ def calc_stats_for_results_file(file_path, use_wrapping = True):
     percentile_lower, percentile_upper = numpy.percentile(theta_list, [16.5, 83.5])
     percentile_width = percentile_upper - percentile_lower
     stats['ThetaPercentileWidth'] = percentile_width
+
+
+    power,error=make_tsallis_fit(phi_list,stats['PhiMean'],stats['PhiStDev'])
+
+    stats['PhiTsallisPower']=power
+    stats['PhiTsallisPowerError']=error
+
+    power,error=make_tsallis_fit(theta_list,stats['ThetaMean'],stats['ThetaStDev'])
+
+    stats['ThetaTsallisPower']=power
+    stats['ThetaTsallisPowerError']=error
 
     return stats
 
@@ -335,3 +346,28 @@ def make_phi_hist_with_noise(rid, is_parallel, hist_dim, noise_stdev, normalize)
     f.Close()
     ROOT.SetOwnership(hist, True)
     return hist
+
+
+def make_tsallis_fit(phi_list,mean,stdev):
+    histogram = TH1D("phi_hist","phi_hist",100,-5,5)
+    for phi in phi_list:
+        histogram.Fill((phi-mean)/stdev)
+    phi_tsallis_func = TF1("phiTsallisFunc", "[0]/pow(1+((x)/[1])*((x)/[1]),[2])", -5)
+    max_bin=histogram.GetMaximum()
+    phi_tsallis_func.SetParNames("Amplitude", "Sigma", "Power")
+    phi_tsallis_func.SetParLimits(1,0.5,7)
+    phi_tsallis_func.SetParLimits(0,0.5*max_bin,1.5*max_bin)
+    phi_tsallis_func.SetParLimits(2,0,100)
+    phi_tsallis_func.SetParameters(max_bin, stdev, 7)
+
+    histogram.Fit("phiTsallisFunc","NM")
+
+    print ROOT.gMinuit.fCstatu
+
+    if ROOT.gMinuit.fCstatu == "OK        ": #If no error
+        chisquare_per_ndf=phi_tsallis_func.GetChisquare()/phi_tsallis_func.GetNDF()
+        if chisquare_per_ndf < 2:
+            print "Tsallis fitted!"
+            return [phi_tsallis_func.GetParameter(2),phi_tsallis_func.GetParError(2)]
+    print "Failed to fit Tsallis"
+    return [0,0]

@@ -811,7 +811,7 @@ today = date.today()
 # r['SRKVersion'] = '85828d9d4a81f6693112cf7c6b67ce83071e2a66'
 # r['Date'] = today.strftime('%m/%d/%y')
 # r['RunType'] = 'parOnly'
-# r['NumTracksPer'] = 10000
+# r['NumTracksPer'] = 100000
 # r['Title'] = '2D Diffuse, Only B0 and E0 Field'
 # s['Use2D'] = 1
 # s['TimeLimit'] = 100
@@ -825,15 +825,15 @@ today = date.today()
 #     srkdata.run_macro_local(run_id)
 
 
-##################################################
-# Specular Omega Only B0 and E0 for only 100 s
+#################################################
+#Specular Omega Only B0 and E0 for only 100 s
 # s = srkdata.default_srk_settings()
 # r = srkdata.default_run_settings()
 #
 # r['SRKVersion'] = '85828d9d4a81f6693112cf7c6b67ce83071e2a66'
 # r['Date'] = today.strftime('%m/%d/%y')
 # r['RunType'] = 'parOnly'
-# r['NumTracksPer'] = 10000
+# r['NumTracksPer'] = 100000
 # r['Title'] = '2D Specular, Only B0 and E0 Field'
 # s['Use2D'] = 1
 # s['TimeLimit'] = 100
@@ -880,25 +880,30 @@ today = date.today()
 ##################################################
 # Diffuse Omega Only B0 and E0 for only Vary Time
 
-s = srkdata.default_srk_settings()
-r = srkdata.default_run_settings()
-
-r['SRKVersion'] = '85828d9d4a81f6693112cf7c6b67ce83071e2a66'
-r['Date'] = today.strftime('%m/%d/%y')
-r['RunType'] = 'parOnly'
-r['NumTracksPer'] = 10000
-r['Title'] = '3D Diffuse, Only B0 and E0 Field Vary Time'
-s['Use2D'] = 0
-s['DiffuseReflectionProb'] = 1.
-s['E0FieldStrength'] = 5e6
-
-
-for i in srkmisc.even_sample_over_log(0.1,1000,6):
-    s['TimeLimit'] = i
-    r['NumTracksPer'] = int(10000000/i) #To get same integrated particle time
-    run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
-    srkdata.make_macro(run_id, s, r)
-    srkdata.run_macro_local(run_id)
-
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = '85828d9d4a81f6693112cf7c6b67ce83071e2a66'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# r['Title'] = '3D Diffuse, Only B0 and E0 Field Vary Time'
+# s['Use2D'] = 0
+# s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 5e6
+#
+#
+# for i in srkmisc.even_sample_over_log(0.1,1000,6):
+#     s['TimeLimit'] = i
+#     r['NumTracksPer'] = int(1000000/i) #To get same integrated particle time
+#     run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     srkdata.make_macro(run_id, s, r)
+#     srkdata.run_macro_local(run_id)
+#
 # for i in xrange(5380, 5386):
 #     srkdata.calc_run_stats_to_database(i)
+
+for i in xrange(5398, 5400):
+    srkdata.calc_run_stats_to_database(i)
+
+#Current ver d495d9829c4312265761c89436681c78e49b0fcf
