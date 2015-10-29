@@ -850,7 +850,7 @@ today = date.today()
 #     srkdata.calc_run_stats_to_database(i)
 
 ###################################################
-## 2D simulation of linear gradient
+## 3D simulation of linear gradient
 
 # s = srkdata.default_srk_settings()
 # r = srkdata.default_run_settings()
@@ -883,10 +883,10 @@ today = date.today()
 # s = srkdata.default_srk_settings()
 # r = srkdata.default_run_settings()
 #
-# r['SRKVersion'] = '85828d9d4a81f6693112cf7c6b67ce83071e2a66'
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
 # r['Date'] = today.strftime('%m/%d/%y')
 # r['RunType'] = 'parOnly'
-# r['NumTracksPer'] = 10000
+# r['NumTracksPer'] = 100000
 # r['Title'] = '3D Diffuse, Only B0 and E0 Field Vary Time'
 # s['Use2D'] = 0
 # s['DiffuseReflectionProb'] = 1.
@@ -900,10 +900,151 @@ today = date.today()
 #     srkdata.make_macro(run_id, s, r)
 #     srkdata.run_macro_local(run_id)
 #
+# for i in range(5400,5406):
+#     srkdata.run_macro_local(i)
+#
 # for i in xrange(5380, 5386):
 #     srkdata.calc_run_stats_to_database(i)
 
-for i in xrange(5398, 5400):
-    srkdata.calc_run_stats_to_database(i)
+# for i in xrange(5398, 5400):
+#     srkdata.calc_run_stats_to_database(i)
+
+# for i in range(5392,5400):
+#     srkdata.calc_run_stats_to_database(i)
 
 #Current ver d495d9829c4312265761c89436681c78e49b0fcf
+
+
+#################################################
+# Specular Omega Only B0 and E0 for only long time
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 1000
+# r['Title'] = '3D Specular, Only B0 and E0 Field Vary EPS'
+# s['Use2D'] = 0
+# s['DiffuseReflectionProb'] = 0
+# s['E0FieldStrength'] = 5e6
+# s['TimeLimit'] = 100
+#
+# for i in srkmisc.even_sample_over_log(1e-9,1e-6,6):
+#     s['EPSAbs'] = i
+#     s['EPSRel'] = i
+#     run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     srkdata.make_macro(run_id, s, r)
+#     srkdata.run_macro_local(run_id)
+
+# for i in range(5412,5418):
+#     srkdata.calc_run_stats_to_database(i)
+
+################################################
+# Diffuse Omega Only B0 and E0 for only long time
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 1000
+# r['Title'] = '3D Diffuse, Only B0 and E0 Field Vary EPS Alt Stepping'
+# s['Use2D'] = 0
+# s['DiffuseReflectionProb'] = 1
+# s['E0FieldStrength'] = 5e6
+# s['TimeLimit'] = 100
+# s['UseAltStepping'] = 1
+#
+# for i in srkmisc.even_sample_over_log(1e-9,1e-6,6):
+#     s['EPSAbs'] = i
+#     s['EPSRel'] = i
+#     run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     srkdata.make_macro(run_id, s, r)
+#     srkdata.run_macro_local(run_id)
+
+# for i in range(5418,5424):
+#     srkdata.calc_run_stats_to_database(i)
+
+##################################################
+# Specular Omega Only B0 and E0 for only Vary Time
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['Title'] = '3D Specular, Only B0 and E0 Field Vary Time'
+# s['Use2D'] = 0
+# s['DiffuseReflectionProb'] = 0
+# s['E0FieldStrength'] = 7e7
+#
+#
+# for i in srkmisc.even_sample_over_log(0.1,1000,6):
+#     s['TimeLimit'] = i
+#     r['NumTracksPer'] = int(1000000/i) #To get same integrated particle time
+#     run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     srkdata.make_macro(run_id, s, r)
+#     srkdata.run_macro_local(run_id)
+
+# for i in range(5441,5442):
+#         srkdata.calc_run_stats_to_database(i)
+
+###################################################
+## 3D simulation of linear gradient
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'No Grav ideal of Grav Depolarizaiton paper, With E'
+# s['Use2D'] = 0
+# s['TimeLimit'] = 180
+# s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 1e6
+#
+# s['MeanVel'] = 5
+#
+# run_ids = []
+# for gradient in srkmisc.even_sample_over_log(5e-8,5e-7,6):
+#     s['BGradFieldStrength']=gradient
+#     run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     srkdata.make_macro(run_id, s, r)
+#     srkdata.run_macro_local(run_id)
+#
+# for i in xrange(4820, 4952):
+#     srkdata.calc_run_stats_to_database(i)
+
+####
+# Longish dipole run - now with random seeds
+##
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmegaSame'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Dipole with PA same tracks via same seed for each deltaOmega'
+# s['E0FieldStrength'] = 5e5
+# s['TrackFilePath'] = "!dynamic"
+#
+# rid_list = []
+# dist_range = np.arange(.1, .5, .1)
+# for dip_str in srkmisc.even_sample_over_log(1e-18, 1e-13, 6):
+#     s['DipoleFieldStrength'] = dip_str
+#     for dist in dist_range:
+#         s['DipolePosition'] = '0. 0. '+str(-0.5 * s['ChamberHeight'] - dist)
+#         rid_list += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# rid_chunks = [rid_list[x:x+len(dist_range)] for x in xrange(0, len(rid_list), len(dist_range))]
+# for i in rid_chunks:
+#     srkdata.make_macro_mult_from_database(i)
+#     srkdata.run_mult_macro_local(i)
+#
+for i in range(1986,2586):
+    srkdata.calc_run_stats_to_database(i)

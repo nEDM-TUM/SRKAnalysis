@@ -67,7 +67,8 @@ def make_plot_from_data(data, titles=None, legend_titles=None, lambda_func=[idt,
 
 
 def make_root_plot_from_results_file(rid, is_parallel, draw_string, cut_string = "", option_string=""):
-    gStyle.SetOptStat("iMRKS")
+    # gStyle.SetOptStat("iMRKS")
+
     srk_sys = srkdata.SRKSystems()
     srk_sys.read_settings_file()
 

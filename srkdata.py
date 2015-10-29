@@ -91,8 +91,8 @@ def default_srk_settings():
         'Vel': '193 0 0',
         'DipolePosition': '0 0 0',
         'DipoleDirection': '0 0 1',
-        'EPSAbs': 1e-7,
-        'EPSRel': 1e-7
+        'EPSAbs': 10.e-7,
+        'EPSRel': 1.0e-7
     }
 
 

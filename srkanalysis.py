@@ -142,12 +142,16 @@ def calc_delta_stats_same_tracks(run_id, use_wrapping=True):
 
 def calc_run_stats(run_id):
     srk_settings, run_settings = srkdata.get_settings_from_database(run_id)
+
     p_stats = calc_orientation_stats(run_id, True)
     a_stats = calc_orientation_stats(run_id, False)
 
     if len(p_stats) > 0 or len(a_stats) > 0:
         p_stats['DipolePositionBelowChamber'] = get_dist_bottom_from_pos(srk_settings['DipolePosition'],
-                                                                         srk_settings['ChamberHeight'])
+                                                      srk_settings['ChamberHeight'])
+        pos = [float(x) for x in srk_settings['DipolePosition'].split(' ')]  # Splits up space separates position list
+        p_stats['DipolePositionX'] = pos[0]
+
     if len(p_stats) == 0 or len(a_stats) == 0:
         return srkdata.merge_dicts(p_stats, a_stats)
 
@@ -184,9 +188,7 @@ def calc_run_stats(run_id):
     run_stats['FalseEDM'] = false_edm.nominal_value
     run_stats['FalseEDMError'] = false_edm.std_dev
 
-    pos = [float(x) for x in srk_settings['DipolePosition'].split(' ')]  # Splits up space separates position list
-    run_stats['DipolePositionBelowChamber'] = pos[2] + srk_settings['ChamberHeight']
-    run_stats['DipolePositionX'] = pos[0]
+
 
     pr_stats = calc_dipole_predictions_pignol_and_rocia(srk_settings)
 
@@ -248,6 +250,7 @@ def calc_dipole_predictions_pignol_and_rocia(srk_settings):
     else:
         out['PRPredictionDeltaOmega'] = false_edm / (100. * hbar / (4. * srk_settings['E0FieldStrength']))
     out['PRPredictionDeltaPhase'] = out['PRPredictionDeltaOmega']*srk_settings['TimeLimit']
+    out['PREPlusOne'] = calc_e_plus_one(dip_str, radius, height, dist)
     return out
 
 
@@ -268,7 +271,7 @@ def get_dipole_pos_from_dist(dist_from_bottom, chamber_height):
 
 1
 def get_dist_bottom_from_pos(dip_pos, chamber_height):
-    return -0.5 * chamber_height + float(dip_pos.split(' ')[2])
+    return 0.5 * chamber_height + float(dip_pos.split(' ')[2])
 
 
 # Presumes centered dipole for now
@@ -310,6 +313,15 @@ def calc_opposite_spin_prob(phi, theta):
     cos_phi = math.cos(phi)
     cos_theta = math.cos(theta)
     return 0.5 * (1. - cos_phi * cos_theta)
+
+
+def calc_t2(phi, theta, time):
+    opp_spin_prob=calc_opposite_spin_prob(phi,theta)
+    return -time/math.log(1.-opp_spin_prob)
+
+
+def calc_t2_from_prob(opp_spin_prob, time):
+    return -time/math.log(1.-opp_spin_prob)
 
 
 def test_kurtosis(num_test):
