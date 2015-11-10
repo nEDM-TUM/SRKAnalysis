@@ -1046,5 +1046,481 @@ today = date.today()
 #     srkdata.make_macro_mult_from_database(i)
 #     srkdata.run_mult_macro_local(i)
 #
-for i in range(1986,2586):
-    srkdata.calc_run_stats_to_database(i)
+# for i in range(5460,5484):
+#     srkdata.calc_run_stats_to_database(i)
+
+###################################################
+## 3D simulation of linear gradient
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'No grav ideal of Grav Depolarization paper'
+# s['Use2D'] = 0
+# s['TimeLimit'] = 180
+# s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 1e6
+#
+# s['GyromagneticRatio'] = "1.83247172e8"
+# s['MeanVel'] = 5
+
+# run_ids = []
+# for gradient in np.linspace(0, 800*1e-12*100, num=6):
+#     s['BGradFieldStrength'] = gradient
+#     # run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     # srkdata.make_macro(run_id, s, r)
+#     # srkdata.run_macro_local(run_id)
+#     srkdata.run_on_optima(s,r)
+
+# for i in xrange(5490,5496):
+#     srkdata.run_macro_optima(i)
+# for i in xrange(5374, 5380):
+#     srkdata.calc_run_stats_to_database(i)
+
+###################################################
+## 2D simulation of linear gradient - UCN
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'No grav ideal of Grav Depolarization paper 2D'
+# s['Use2D'] = 1
+# s['TimeLimit'] = 180
+# s['DiffuseReflectionProb'] = 1.
+# s['E0FieldStrength'] = 1e6
+#
+# s['GyromagneticRatio'] = "1.83247172e8"
+# s['MeanVel'] = 5
+#
+# run_ids = []
+# for gradient in np.linspace(0, 800*1e-12*100, num=6):
+#     s['BGradFieldStrength'] = gradient
+#     srkdata.run_on_optima(s,r)
+
+
+# for i in xrange(5484, 5502):
+#     srkdata.calc_run_stats_to_database(i)
+
+###################################################
+## 3D simulation of linear gradient
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Intrinsic T2, Vary Vel'
+# s['Use2D'] = 0
+# s['TimeLimit'] = 180
+# s['DiffuseReflectionProb'] = 0
+# s['E0FieldStrength'] = 0
+#
+# s['GyromagneticRatio'] = "1.83247172e8"
+# s['MeanVel'] = 0.5
+# s['BGradFieldStrength']=10/(0.01*1e12)
+#
+# run_ids = []
+# for velocity in np.linspace(.5, 2, num=6):
+#     s['BGradFieldStrength'] = gradient
+#     # run_id = srkdata.add_to_database(srkdata.merge_dicts(s, r))
+#     # srkdata.make_macro(run_id, s, r)
+#     # srkdata.run_macro_local(run_id)
+#     srkdata.run_on_optima(s,r)
+
+
+
+###################################################
+## Let's make some mass runs
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Radius'
+#
+# run_ids = []
+# for x in np.linspace(0.1, 1., num = 10):
+#     s['ChamberRadius'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Height'
+#
+# run_ids = []
+# for x in np.linspace(0.1, 1., num = 10):
+#     s['ChamberHeight'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Height'
+#
+# run_ids = []
+# for x in np.linspace(0., 1., num = 11):
+#     s['DiffuseReflectionProb'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary BField'
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1.e-7, 1.e-5, 10):
+#     s['B0FieldStrength'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Efield'
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1.e5, 1.e7, 10):
+#     s['E0FieldStrength'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Time'
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1, 1000, 10):
+#     s['TimeLimit'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary EPS'
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1e-5, 1e-9, 5):
+#     s['EPSAbs'] = x
+#     s['EPSRel'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Vel'
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(0.5, 200, 90):
+#     s['MeanVel'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# for i in srkmisc.chunk_list(run_ids, 9):
+#     srkdata.make_macro_mult_from_database(i)
+#     srkdata.run_mult_macro_optima(i)
+
+# for i in xrange(5520, 5675):
+#     srkdata.calc_run_stats_to_database(i)
+
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Efield, No B'
+# s['B0FieldStrength']=0
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1.e5, 1.e7, 10):
+#     s['E0FieldStrength'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# for i in run_ids:
+#     srkdata.make_macro_from_database(i)
+#     srkdata.run_macro_local(i)
+
+###################################################
+## Let's make some mass runs
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Radius'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in np.linspace(0.1, 1., num = 10):
+#     s['ChamberRadius'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Height'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in np.linspace(0.1, 1., num = 10):
+#     s['ChamberHeight'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Height'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in np.linspace(0., 1., num = 11):
+#     s['DiffuseReflectionProb'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary BField'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1.e-7, 1.e-5, 10):
+#     s['B0FieldStrength'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Efield'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1.e5, 1.e7, 10):
+#     s['E0FieldStrength'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Time'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1, 1000, 10):
+#     s['TimeLimit'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary EPS'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(1e-5, 1e-9, 5):
+#     s['EPSAbs'] = x
+#     s['EPSRel'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# srkdata.make_macro_mult_from_database(run_ids)
+# srkdata.run_mult_macro_optima(run_ids)
+#
+#
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['SRKVersion'] = 'd495d9829c4312265761c89436681c78e49b0fcf'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# r['Title'] = 'Mass Runs: Vary Vel'
+# s['GyromagneticRatio']=1.83247172e8
+#
+# run_ids = []
+# for x in srkmisc.even_sample_over_log(0.5, 200, 90):
+#     s['MeanVel'] = x
+#     run_ids += [srkdata.add_to_database(srkdata.merge_dicts(s, r))]
+#
+# for i in srkmisc.chunk_list(run_ids, 9):
+#     srkdata.make_macro_mult_from_database(i)
+#     srkdata.run_mult_macro_optima(i)
+
+# for i in xrange(5675, 5842):
+#     srkdata.calc_run_stats_to_database(i)
+
+
+##################################
+## 'Maxwell profiles: Temperature'
+##################################
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['Title'] = 'Maxwell profiles: Temperature'
+# r['SRKVersion'] = 'e7418ae18139be18a21f468ee29f838ba9c1f733'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+#
+#
+# for x in np.linspace(77, 300, num = 6):
+#     s['VelProfHistPath'] = '!'+str(x)
+#     # rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+
+# run_ids = range(5842, 5848)
+# for rid in run_ids:
+#     srkdata.run_macro_local(rid)
+
+# for i in xrange(5845, 5848):
+#     srkdata.calc_run_stats_to_database(i)
+
+##################################
+## 'Maxwell profiles: Vary Temperature with Linear Gradient'
+##################################
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['Title'] = 'Maxwell profiles: Vary Temperature with linear gradient'
+# r['SRKVersion'] = '81de8031a61f34f84d5616d0e0fbfcc2beff137d'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# #
+# s['BGradFieldStrength']=1.e-12*100.
+#
+#
+# for x in np.linspace(77, 300, num = 6):
+#     s['VelProfHistPath'] = '!'+str(x)
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+
+##################################
+## 'Maxwell profiles: Vary Temperature with Linear Gradient'
+##################################
+# s = srkdata.default_srk_settings()
+# r = srkdata.default_run_settings()
+#
+# r['Title'] = 'Maxwell profiles: Vary linear gradient with 300 K'
+# r['SRKVersion'] = '81de8031a61f34f84d5616d0e0fbfcc2beff137d'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'deltaOmega'
+# r['NumTracksPer'] = 10000
+# #
+# s['VelProfHistPath'] = '!300.'
+#
+# for x in srkmisc.even_sample_over_log(1e-14, 1e-9, 6):
+#     s['BGradFieldStrength'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s, r)
+#     srkdata.run_macro_optima(rid)
+
+run_ids = range(5854, 5860)
+for rid in run_ids:
+    srkdata.run_macro_optima(rid)

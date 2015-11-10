@@ -89,6 +89,3 @@ def make_root_plot_from_results_file(rid, is_parallel, draw_string, cut_string =
     c1 = rootnotes.canvas("Canvas", (1200, 800))
     hit_tree.Draw(draw_string,cut_string,option_string)
     return c1
-
-
-

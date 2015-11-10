@@ -1,12 +1,14 @@
-from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D, TF1
+from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D, TF1,TGeoTube,TVector3
 import ROOT
 import srkdata
 import srkmisc
 import math
+import array
 from scipy import constants as const
 from scipy.stats import kurtosis, skew
 from uncertainties import ufloat
 import numpy
+import matplotlib.pyplot as plt
 
 __author__ = 'mjbales'
 
@@ -361,25 +363,88 @@ def make_phi_hist_with_noise(rid, is_parallel, hist_dim, noise_stdev, normalize)
 
 
 def make_tsallis_fit(phi_list,mean,stdev):
-    histogram = TH1D("phi_hist","phi_hist",100,-5,5)
+    if stdev == 0:
+        return [0, 0]
+    histogram = TH1D("phi_hist", "phi_hist", 100, -5, 5)
     for phi in phi_list:
-        histogram.Fill((phi-mean)/stdev)
+        histogram.Fill((phi - mean) / stdev)
     phi_tsallis_func = TF1("phiTsallisFunc", "[0]/pow(1+((x)/[1])*((x)/[1]),[2])", -5)
-    max_bin=histogram.GetMaximum()
+    max_bin = histogram.GetMaximum()
     phi_tsallis_func.SetParNames("Amplitude", "Sigma", "Power")
-    phi_tsallis_func.SetParLimits(1,0.5,7)
-    phi_tsallis_func.SetParLimits(0,0.5*max_bin,1.5*max_bin)
-    phi_tsallis_func.SetParLimits(2,0,100)
+    phi_tsallis_func.SetParLimits(1, 0.5, 7)
+    phi_tsallis_func.SetParLimits(0, 0.5 * max_bin, 1.5 * max_bin)
+    phi_tsallis_func.SetParLimits(2, 0, 100)
     phi_tsallis_func.SetParameters(max_bin, stdev, 7)
+    if histogram.Integral() == 0:
+        return [0, 0]
 
-    histogram.Fit("phiTsallisFunc","NM")
+    histogram.Fit("phiTsallisFunc", "NM")
 
-    print ROOT.gMinuit.fCstatu
-
-    if ROOT.gMinuit.fCstatu == "OK        ": #If no error
-        chisquare_per_ndf=phi_tsallis_func.GetChisquare()/phi_tsallis_func.GetNDF()
+    if ROOT.gMinuit.fCstatu == "OK        ":  # If no error
+        chisquare_per_ndf = phi_tsallis_func.GetChisquare() / phi_tsallis_func.GetNDF()
         if chisquare_per_ndf < 2:
             print "Tsallis fitted!"
-            return [phi_tsallis_func.GetParameter(2),phi_tsallis_func.GetParError(2)]
+            return [phi_tsallis_func.GetParameter(2), phi_tsallis_func.GetParError(2)]
     print "Failed to fit Tsallis"
-    return [0,0]
+    return [0, 0]
+
+
+def make_alpha_vs_phi_plot(run_id, is_parallel):
+    if is_parallel:
+        letter = 'P'
+        run_type = 'Par'
+    else:
+        letter = 'A'
+        run_type = 'Anti'
+    file_path = srkdata.SRKSystems.results_dir + "Results_RID" + str(run_id) + "_" + letter + ".root"
+
+    if not srkmisc.file_exits_and_not_zombie(file_path):
+        print file_path + " doesn't exist or is zombie."
+        return {}
+
+    root_file = TFile(file_path, "READ")
+    hit_tree = gDirectory.Get('hitTree')
+    gROOT.cd()
+    num_events = hit_tree.GetEntries()
+
+    phi_list = []
+    alpha_list = []
+    radius = srkdata.get_data_for_rids_from_database([run_id], "ChamberRadius")[0][0]
+    print radius
+    for i in xrange(num_events):
+        hit_tree.GetEntry(i)
+        phi_list.append(hit_tree.phi)
+        alpha = get_alpha_angle_2D(radius, hit_tree.pos0, hit_tree.vel0)
+        alpha_list.append(alpha)
+    root_file.Close()
+
+    phi_mean = srkmisc.reduce_periodics(phi_list)
+
+    delta_phi_list = map(lambda x: x-phi_mean, phi_list)
+
+    plt.scatter(alpha_list, delta_phi_list)
+
+
+def get_alpha_angle_2D(radius, pos0, vel0):
+    shape = TGeoTube(0, radius, radius)
+    point = array.array('d', [pos0.X(), pos0.Y(), 0])
+    vel0.SetZ(0)
+
+    vel0.SetMag(1)
+
+    direction = array.array('d', [vel0.X(), vel0.Y(), 0])
+    distance = shape.DistFromInside(point, direction)
+
+    post_out = pos0 + vel0 * distance
+
+    norm_list = array.array('d', [0, 0, 0])
+    point = array.array('d', [post_out.X(), post_out.Y(), 0])
+
+    shape.ComputeNormal(point, direction, norm_list)
+    norm = TVector3(norm_list[0], norm_list[1], norm_list[2])
+    dot_prod = vel0.Dot(norm)
+
+    angle = math.acos(dot_prod)
+
+    return angle
+

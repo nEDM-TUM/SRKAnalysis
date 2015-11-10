@@ -12,7 +12,7 @@ class SRKSystems:
     macro_dir = '/home/mjbales/work/nedm/macros/'
     graphs_dir = '/home/mjbales/work/nedm/graphs/'
     hists_dir = '/home/mjbales/work/nedm/hists/'
-    results_dir = '/home/mjbales/work/nedm/results/'
+    results_dir = '/data/nedm/results/'
     logs_dir = '/home/mjbales/work/nedm/logs/'
     tracks_dir = '/data/nedm/tracks/'
     srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
@@ -46,7 +46,8 @@ class SRKSystems:
         SRKSystems.computer=value
         if SRKSystems.computer == 'work_laptop':
             SRKSystems.macro_dir = '/home/mjbales/work/nedm/macros/'
-            SRKSystems.results_dir = '/home/mjbales/work/nedm/results/'
+            # SRKSystems.results_dir = '/home/mjbales/work/nedm/results/'
+            SRKSystems.results_dir = '/data/nedm/results/'
             SRKSystems.logs_dir = '/home/mjbales/work/nedm/logs/'
             SRKSystems.graphs_dir = '/home/mjbales/work/nedm/graphs/'
             SRKSystems.hists_dir = '/home/mjbales/work/nedm/hists/'
@@ -64,6 +65,16 @@ class SRKSystems:
             SRKSystems.tracks_dir = 'D:\\work\\nedm\\tracks\\'
             SRKSystems.database_path = 'D:\\work\\code\\SRKAnalysis\\nedmAnalysis.sqlite'
             SRKSystems.os = 'Windows'
+        if SRKSystems.computer == 'optima':
+            SRKSystems.macro_dir = '/home/mjbales/work/nedm/macros/'
+            SRKSystems.results_dir = '/home/mjbales/work/nedm/results/'
+            SRKSystems.logs_dir = '/home/mjbales/work/nedm/logs/'
+            SRKSystems.graphs_dir = '/home/mjbales/work/nedm/graphs/'
+            SRKSystems.hists_dir = '/home/mjbales/work/nedm/hists/'
+            SRKSystems.srk_path = '/home/mjbales/SRK/build/SRK'
+            SRKSystems.tracks_dir = '/data/nedm/tracks/'
+            SRKSystems.database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
+            SRKSystems.os = 'Linux'
 
 
 # Default settings for macro files for SRK
@@ -91,8 +102,8 @@ def default_srk_settings():
         'Vel': '193 0 0',
         'DipolePosition': '0 0 0',
         'DipoleDirection': '0 0 1',
-        'EPSAbs': 10.e-7,
-        'EPSRel': 1.0e-7
+        'EPSAbs': 1e-7,
+        'EPSRel': 1e-7
     }
 
 
@@ -405,18 +416,19 @@ def run_command_optima(command):
     print('$OPTIMA stderr: ' + str(ssh_stderr.readlines()))
     ssh.close()
 
+def run_mult_macro_optima(run_ids):
+    rid_str = str(run_ids[0])+"_thru_"+str(run_ids[-1])
+    run_macro_optima(rid_str)
 
-def run_macro_optima(rid_numbers):
+def run_macro_optima(rid_number):
     srk_sys = SRKSystems()
     srk_sys.read_settings_file()
     sync_macros_to_optima()
     command = '. "/opt/software/root/root_v5.34.21/bin/thisroot.sh"; '
 
-    for i in rid_numbers:
-        command += 'nohup /home/mjbales/SRK/build/bin/SRK ' +SRKSystems.macro_dir + 'RID' + str(
-            i) + '.mac &> ' + SRKSystems.logs_dir + 'logRID' + str(i) + '.txt&'
-        command += '; '
-    command = command[:-2]  # remove last semicolon and space
+
+    command += 'nohup ' + SRKSystems.srk_path + ' ' + SRKSystems.macro_dir + 'RID' + str(
+        rid_number) + '.mac &> ' + SRKSystems.logs_dir + 'logRID' + str(rid_number) + '.txt&'
 
     run_command_optima(command)
 
@@ -459,7 +471,7 @@ def run_on_optima(srk_settings, run_settings):
     """
 
     run_id = make_macro_and_add_to_database(srk_settings, run_settings)
-    run_macro_optima([run_id])
+    run_macro_optima(run_id)
     return run_id
 
 def execute_runlog_command(command, value_tuple):
