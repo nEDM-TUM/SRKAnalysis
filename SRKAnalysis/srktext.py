@@ -8,6 +8,20 @@ import srkmisc
 from ROOT import TFile,  gDirectory, TH1, gROOT,TH1D
 from array import array
 
+def read_delimited_txt(txt_file_path,delimiter='\t',quotechar='"',skipchar='#'):
+    file = open(txt_file_path, 'rt')
+    data=[]
+    try:
+        reader = csv.reader(file ,delimiter=delimiter,quotechar=quotechar)
+        for row in reader:
+            if not row[0].startswith(skipchar):
+                data.append(row)
+    finally:
+        file.close()
+    return data
+
+
+#Old
 def delimited_text_to_data(file_path, delim='\t'):
     f = open(file_path, 'rt')
 

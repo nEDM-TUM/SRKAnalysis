@@ -63,3 +63,4 @@ settings.txt
 .ipynb_checkpoints
 .project
 .pydevproject
+/src/
