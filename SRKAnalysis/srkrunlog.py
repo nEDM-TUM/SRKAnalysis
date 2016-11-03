@@ -1,6 +1,7 @@
 from srkanalysis import get_dipole_pos_from_dist
 import srkdata
 import srkmisc
+import srkmultiprocessing
 import srkanalysis
 import sqlite3
 import numpy as np
@@ -3928,7 +3929,146 @@ r = srkdata.default_run_settings()
 # s['TimeLimit']=100
 #     
 # rid=srkdata.make_macro_and_add_to_database(s,r)
-srkdata.run_macro_local(7533)
+# srkdata.run_macro_local(7533)
 # for run_id in range(7532,7534):
 #     print run_id
 #     srkdata.calc_run_stats_to_database(run_id)
+######################################################
+# r['Title'] = "Correct Bernd Hg Setup Test w Periodic"
+# r['SRKVersion'] = '03191a62d5629382d26f9fd1d39e41c37291aa38'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# s['VelProfHistPath'] = '!293.15'
+# s['ChamberRadius']=0.025
+# s['ChamberHeight']=0.10
+# s['ChamberRotation'] = '0. 90. 0.'
+# s['E0FieldStrength']=0
+# s['B0FieldStrength']=1e-6
+# s['RecordAllSteps']=1
+# s['PeriodicStopTime']=0.00333333
+# s['TimeLimit']=100
+# gradients=srkmisc.even_sample_over_log(1e-5, 1e-9, 5)
+# 
+# for x in gradients:
+#     s['BGradFieldStrength'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+#     time.sleep(2)
+##############################################################
+# Step tree calc
+# if __name__ == '__main__':
+#     srkmultiprocessing.run_func_rids(range(7536,7541), srkanalysis.calc_step_tree_to_txt,0.00333333)
+######################################################
+# r['Title'] = "Wall Depol only-Correct Bernd Hg Setup Test w Periodic"
+# r['SRKVersion'] = '3b1aada08e73b85400ffeaeb1ce43a4da0874ce6'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# s['VelProfHistPath'] = '!293.15'
+# s['ChamberRadius']=0.025
+# s['ChamberHeight']=0.10
+# s['ChamberRotation'] = '0. 90. 0.'
+# s['E0FieldStrength']=0
+# s['B0FieldStrength']=1e-6
+# s['BGradFieldStrength']=0
+# s['RecordAllSteps']=1
+# s['PeriodicStopTime']=0.00333333
+# s['TimeLimit']=100
+# wall_depol=srkmisc.even_sample_over_log(0.00001, 0.001, 3)
+#  
+# for x in wall_depol:
+#     s['DepolAtWallProb'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+#     time.sleep(2)
+##############################################################
+# Step tree calc
+# if __name__ == '__main__':
+#     srkmultiprocessing.run_func_rids(range(7541,7544), srkanalysis.calc_step_tree_to_txt,0.00333333)
+################################################################
+# Calc Run stats
+#for run_id in range(7541,7543):
+#    print run_id
+#    srkdata.calc_run_stats_to_database(run_id)
+################################################################
+# r['Title'] = 'Vary polarization angle, E0, higher stat '
+# r['SRKVersion'] = '62f26e55645b1cb7cf74994c790aa1b5127dbaa0'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 100
+# s['VelProfHistPath'] = '!293.15'
+# s['E0FieldStrength']=1e6
+#
+# run_ids=[]
+# for x in np.linspace(10., 80., num = 6):
+#     s['ThetaStart'] = x*np.pi/180.
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_optima(rid)
+
+# for rid in xrange(7552,7558):
+#     srkdata.make_macro_from_database(rid)
+#     srkdata.run_macro_optima(rid)
+#####################################################################
+# r['Title'] = 'Vary polarization angle, E0, higher stat '
+# r['SRKVersion'] = '62f26e55645b1cb7cf74994c790aa1b5127dbaa0'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 50000
+# s['VelProfHistPath'] = '!293.15'
+# s['E0FieldStrength']=1e6
+#
+# run_ids=[]
+# for x in np.linspace(0, 80., num = 14):
+#     s['ThetaStart'] = x*np.pi/180.
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_optima(rid)
+###################################################################
+# r['Title'] = "Correct Bernd Hg Setup Test w Periodic & EField"
+# r['SRKVersion'] = '62f26e55645b1cb7cf74994c790aa1b5127dbaa0'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# s['VelProfHistPath'] = '!293.15'
+# s['ChamberRadius']=0.025
+# s['ChamberHeight']=0.10
+# s['ChamberRotation'] = '0. 90. 0.'
+# s['BGradFieldStrength']=0
+# s['B0FieldStrength']=1e-6
+# s['E0FieldStrength']=1e-6
+# s['RecordAllSteps']=1
+# s['PeriodicStopTime']=0.00333333
+# s['TimeLimit']=100
+# strengths=srkmisc.even_sample_over_log(1, 1e-9, 5)
+#
+# for x in strengths:
+#     s['E0FieldStrength'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+#     time.sleep(2)
+
+#####################################################
+# for run_id in range(7328,7329):
+#     print run_id
+#     srkdata.calc_run_stats_to_database(run_id)
+######################################################
+# r['Title'] = 'Vary E0 angles, large'
+#
+# r['SRKVersion'] = '62f26e55645b1cb7cf74994c790aa1b5127dbaa0'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 100000
+# s['VelProfHistPath'] = '!293.15'
+# s['BGradFieldStrength']=0
+# s['E0FieldStrength']=1e6
+#
+# run_ids=[]
+# for x in np.linspace(5, 50, num = 5):
+#     y=x*np.pi/180.
+#     s['E0FieldDirection'] = '0 {:.14f} {:.14f}'.format(np.sin(y),np.cos(y))
+#     rid = srkdata.make_macro_and_add_to_database(s, r)
+#     srkdata.run_macro_optima(rid)
+###################################################
+for run_id in range(7328,7329):
+    print run_id
+    srkdata.calc_run_stats_to_database(run_id)

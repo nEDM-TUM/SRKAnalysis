@@ -1,4 +1,6 @@
 import csv
+import sys
+sys.path.append('/home/mjbales/work/software/root/root_v5.34.36/lib')
 from ROOT import TFile, TTree, gDirectory, gROOT, gRandom, TH1D, TF1,TGeoTube,TVector3
 import ROOT
 import srkdata
@@ -416,7 +418,7 @@ def make_qgaussian_fit(phi_list,mean,stdev):
     if histogram.Integral() == 0:
         return [0, 0]
 
-    histogram.Fit("qGaussianFunc", "NMV")
+    histogram.Fit("qGaussianFunc", "MV")
     print "Status: %s" % ROOT.gMinuit.fCstatu
     if (ROOT.gMinuit.fCstatu == "OK        " or ROOT.gMinuit.fCstatu == "CONVERGED ") and qGaussianFunc.GetNDF() > 0:  # If no error
 
@@ -588,7 +590,7 @@ def calc_step_tree(file_path,inp_periodic_stop_time):
     if not srkmisc.file_exits_and_not_zombie(file_path):
         print file_path + " doesn't exist or is zombie."
         return []
-
+    print "Calculating step tree for {}".format(file_path)
     root_file = TFile(file_path, "READ")
     step_tree = gDirectory.Get('stepTree')
     hit_tree = gDirectory.Get('hitTree')
@@ -615,8 +617,8 @@ def calc_step_tree(file_path,inp_periodic_stop_time):
         
     #Add data
     for i in xrange(num_events):
-        if(i % 10 == 0):
-            print "Starting Event: {}".format(i);
+        if(i % 100 == 0):
+            print "Stepping for Event {} in {}".format(i,file_path);
         for j in xrange(num_steps_per_event):
             step_tree.GetEntry(i * num_steps_per_event + j)
             sx_prob_data[j] += step_tree.sxProb
@@ -627,7 +629,9 @@ def calc_step_tree(file_path,inp_periodic_stop_time):
     root_file.Close()
     return zip(time_data,sx_prob_data)
 
-def calc_step_tree_to_txt(results_file_path, txt_file_path,inp_periodic_stop_time):
+def calc_step_tree_to_txt(run_id,inp_periodic_stop_time):
+    results_file_path=srkdata.SRKSystems.results_dir+"Results_RID"+str(run_id)+"_P.root"
+    txt_file_path=srkdata.SRKSystems.hists_dir+"data_steps_RID"+str(run_id)+"_P.txt"
     data=calc_step_tree(results_file_path,inp_periodic_stop_time)
     with open(txt_file_path, 'wb') as csvfile:
         the_writer = csv.writer(csvfile, delimiter='\t')
