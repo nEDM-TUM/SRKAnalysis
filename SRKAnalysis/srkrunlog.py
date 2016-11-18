@@ -6,6 +6,7 @@ import srkanalysis
 import sqlite3
 import numpy as np
 from datetime import date
+import srkglobal
 
 import time
 start_time = time.time()
@@ -13,6 +14,7 @@ start_time = time.time()
 today = date.today()
 s = srkdata.default_srk_settings()
 r = srkdata.default_run_settings()
+srkglobal.set_computer("work_laptop")
 #
 # s = srkdata.default_srk_settings()
 # r = srkdata.default_run_settings()
@@ -583,7 +585,7 @@ r = srkdata.default_run_settings()
 # s['DiffuseReflectionProb'] = 1.
 # s['E0FieldStrength'] = 1.e6
 # s['TrackFilePath'] = '!static'
-# #srkdata.make_tracks_for_omega(100000, s, .1, 10, 100)
+# #srkdata.make_tracks_for_steyerl(100000, s, .1, 10, 100)
 #
 # run_ids = []
 # for gradient in [1.e-10, 1.e-9, 1.e-8]:
@@ -4069,6 +4071,71 @@ r = srkdata.default_run_settings()
 #     rid = srkdata.make_macro_and_add_to_database(s, r)
 #     srkdata.run_macro_optima(rid)
 ###################################################
-for run_id in range(7328,7329):
-    print run_id
-    srkdata.calc_run_stats_to_database(run_id)
+# for run_id in range(7596,7601):
+#     print run_id
+#     srkdata.calc_run_stats_to_database(run_id)
+###################################################
+# r['Title'] = "Wall Depol only-Correct Bernd Hg Setup Test w Periodic, Fixed"
+# r['SRKVersion'] = 'e07f6594f4665aa10d0e1d6edb0a8f800b60890e'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# s['VelProfHistPath'] = '!293.15'
+# s['ChamberRadius']=0.025
+# s['ChamberHeight']=0.10
+# s['ChamberRotation'] = '0. 90. 0.'
+# s['E0FieldStrength']=0
+# s['B0FieldStrength']=1e-6
+# s['BGradFieldStrength']=0
+# s['RecordAllSteps']=1
+# s['PeriodicStopTime']=0.00333333
+# s['TimeLimit']=100
+# wall_depol=srkmisc.even_sample_over_log(0.000001, 0.00001, 4)
+#
+# for x in wall_depol:
+#     s['DepolAtWallProb'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_local(rid)
+#     time.sleep(2)
+
+# rids=range(7606,7610)
+# for rid in rids:
+#     # srkdata.make_macro_from_database(rid)
+#     # srkdata.run_macro_optima(rid)
+#     srkdata.calc_run_stats_to_database(rid)
+
+##############################################################
+# Step tree calc
+# if __name__ == '__main__':
+#     srkmultiprocessing.run_func_rids(range(7606,7610), srkanalysis.calc_step_tree_to_txt,0.00333333)
+
+###################################################
+# r['Title'] = "Wall Depol only-Correct Bernd Hg Setup Test w Periodic, Fixed 2"
+# r['SRKVersion'] = 'f231278675d1fa97798844ac3a47079ac6fc6a01'
+# r['Date'] = today.strftime('%m/%d/%y')
+# r['RunType'] = 'parOnly'
+# r['NumTracksPer'] = 10000
+# s['VelProfHistPath'] = '!293.15'
+# s['ChamberRadius']=0.025
+# s['ChamberHeight']=0.10
+# s['ChamberRotation'] = '0. 90. 0.'
+# s['E0FieldStrength']=0
+# s['B0FieldStrength']=1e-6
+# s['BGradFieldStrength']=0
+# s['RecordAllSteps']=1
+# s['PeriodicStopTime']=0.00333333
+# s['TimeLimit']=100
+# wall_depol=srkmisc.even_sample_over_log(0.000001, 0.00001, 4)
+#
+# for x in wall_depol:
+#     s['DepolAtWallProb'] = x
+#     rid=srkdata.make_macro_and_add_to_database(s,r)
+#     srkdata.run_macro_optima(rid)
+#     time.sleep(2)
+
+###################################################
+# rids=range(7610,7614)
+# for rid in rids:
+#     srkdata.run_macro_optima(rid)
+#     srkdata.calc_run_stats_to_database(rid)
+print srkdata.get_last_primary_key_in_database()
