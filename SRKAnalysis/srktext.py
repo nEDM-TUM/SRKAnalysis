@@ -13,15 +13,15 @@ __email__ = "matthew.bales@gmail.com"
 
 def read_delimited_txt(txt_file_path, delimiter='\t', quotechar='"', skipchar='#'):
     """Reads in data from a text file in delimited formats."""
-    file = open(txt_file_path, 'rt')
+    txt_file = open(txt_file_path, 'rt')
     data = []
     try:
-        reader = csv.reader(file, delimiter=delimiter, quotechar=quotechar)
+        reader = csv.reader(txt_file, delimiter=delimiter, quotechar=quotechar)
         for row in reader:
             if not row[0].startswith(skipchar):
                 data.append(row)
     finally:
-        file.close()
+        txt_file.close()
     return data
 
 
@@ -64,7 +64,7 @@ def delimited_text_to_data(file_path, delim='\t'):
         return data_out, titles.split(';', 1)
 
 
-def make_txt_from_hist(file_path, histogram, titles=["", "", ""]):
+def make_txt_from_hist(file_path, histogram, titles=("", "", "")):
     """Converts a TH1 histogram to a text file."""
     f = open(file_path, 'w')
     if titles[0] != "" or titles[1] != "" or titles[2] != "":
@@ -79,10 +79,8 @@ def make_txt_from_hist(file_path, histogram, titles=["", "", ""]):
 
 
 def make_txt_hist_from_root_file(file_path_txt, rid, is_parallel, draw_string, hist_dim, cut_string="",
-                                 option_string="", titles=["", "", ""]):
+                                 option_string="", titles=("", "", "")):
     """Given a draw/cut string, take an SRK ROOT results file and create a histogram from it."""
-    srk_sys = srkdata.srkglobal()
-    srk_sys.read_settings_file()
 
     if is_parallel:
         letter = 'P'

@@ -18,7 +18,7 @@ tracks_dir = None  # Where tracks are stored
 srk_path = None  # Where SRK executable binary is stored
 database_path = None  # Where sqlite database is stored
 os = None  # What OS the computer uses
-optima_address="optimal.universe-cluster.de" # Optima address
+optima_address = "optimal.universe-cluster.de"  # Optima address
 
 
 def set_computer(inp_computer):

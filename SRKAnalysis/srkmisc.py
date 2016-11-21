@@ -118,10 +118,10 @@ def delimited_text_to_TGraphErrors(file_path, delim='\t'):
         titles = file_path
         f.seek(0)
 
-    x = []
-    y = []
-    xE = []
-    yE = []
+    # x = []
+    # y = []
+    # xE = []
+    # yE = []
     data = []
     try:
         test_columns, reader = itertools.tee(csv.reader(f, delimiter=delim))
@@ -165,8 +165,8 @@ def delimited_text_to_TGraphErrors(file_path, delim='\t'):
         c = [float(i) for i in c]
         x = array("d", a)
         y = array("d", b)
-        yErr = array("d", c)
-        out_graph = TGraphErrors(len(x), x, y, ROOT.nullptr, yErr)
+        y_error = array("d", c)
+        out_graph = TGraphErrors(len(x), x, y, ROOT.nullptr, y_error)
 
     elif columns == 4:
         a, b, c, d = zip(*data)
@@ -176,9 +176,9 @@ def delimited_text_to_TGraphErrors(file_path, delim='\t'):
         d = [float(i) for i in d]
         x = array("d", a)
         y = array("d", b)
-        xErr = array("d", c)
-        yErr = array("d", d)
-        out_graph = TGraphErrors(len(x), x, y, xErr, yErr)
+        x_error = array("d", c)
+        y_error = array("d", d)
+        out_graph = TGraphErrors(len(x), x, y, x_error, y_error)
     else:
         print "Too many columns"
         return None
@@ -190,7 +190,7 @@ def delimited_text_to_TGraphErrors(file_path, delim='\t'):
 def skip_comment_lines(opened_file, comment_delim='#'):
     """Skips comment lines designated by a comment delimiter."""
     pos = opened_file.tell()
-    for line in file:
+    for line in opened_file:
         if line[0] != comment_delim:
             opened_file.seek(pos)  # Go back
             return

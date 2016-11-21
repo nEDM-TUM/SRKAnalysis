@@ -67,11 +67,11 @@ def calc_stats_for_results_file(file_path, use_wrapping=False):
     stats['ThetaSkewness'] = skew(theta_array)
     print "Phi Kurtosis: %f" % stats['PhiKurtosis']
 
-    percentile_lower, percentile_upper = np.percentile(phi_array, [16.5, 83.5])
+    percentile_lower, percentile_upper = np.percentile(phi_array, (16.5, 83.50))
     percentile_width = percentile_upper - percentile_lower
     stats['PhiPercentileWidth'] = percentile_width
 
-    percentile_lower, percentile_upper = np.percentile(theta_array, [16.5, 83.5])
+    percentile_lower, percentile_upper = np.percentile(theta_array, (16.5, 83.5))
     percentile_width = percentile_upper - percentile_lower
     stats['ThetaPercentileWidth'] = percentile_width
 
@@ -129,10 +129,8 @@ def calc_delta_stats_same_tracks(run_id, use_wrapping=True):
     for is_parallel in [True, False]:
         if is_parallel:
             letter = 'P'
-            run_type = 'Par'
         else:
             letter = 'A'
-            run_type = 'Anti'
         file_path = srkglobal.results_dir + "Results_RID" + str(run_id) + "_" + letter + ".root"
 
         if not srkmisc.file_exits_and_not_zombie(file_path):
@@ -419,13 +417,13 @@ def make_qgaussian_fit(data, mean, stdev):
     histogram = TH1D("hist", "hist", 100, -5, 5)
     for phi in data:
         histogram.Fill((phi - mean) / stdev)
-    qGaussianFunc = TF1("qGaussianFunc", "[0]*pow(1+([2]-1)*[1]*x*x,-1/([2]-1))")
+    q_gaussian_func = TF1("qGaussianFunc", "[0]*pow(1+([2]-1)*[1]*x*x,-1/([2]-1))")
     max_bin = histogram.GetMaximum()
-    qGaussianFunc.SetParNames("Amplitude", "Beta", "q")
-    qGaussianFunc.SetParLimits(1, 0.1, 20)
-    qGaussianFunc.SetParLimits(0, 0.5 * max_bin, 1.5 * max_bin)
-    qGaussianFunc.SetParLimits(2, 1.0001, 3)
-    qGaussianFunc.SetParameters(max_bin, 3, 2)
+    q_gaussian_func.SetParNames("Amplitude", "Beta", "q")
+    q_gaussian_func.SetParLimits(1, 0.1, 20)
+    q_gaussian_func.SetParLimits(0, 0.5 * max_bin, 1.5 * max_bin)
+    q_gaussian_func.SetParLimits(2, 1.0001, 3)
+    q_gaussian_func.SetParameters(max_bin, 3, 2)
     print "Hist Kurtosis: %f" % histogram.GetKurtosis()
     if histogram.Integral() == 0:
         return [0, 0]
@@ -433,13 +431,13 @@ def make_qgaussian_fit(data, mean, stdev):
     histogram.Fit("qGaussianFunc", "MV")
     print "Status: %s" % ROOT.gMinuit.fCstatu
     if (
-                    ROOT.gMinuit.fCstatu == "OK        " or ROOT.gMinuit.fCstatu == "CONVERGED ") and qGaussianFunc.GetNDF() > 0:  # If no error
+                    ROOT.gMinuit.fCstatu == "OK        " or ROOT.gMinuit.fCstatu == "CONVERGED ") and q_gaussian_func.GetNDF() > 0:  # If no error
 
-        chisquare_per_ndf = qGaussianFunc.GetChisquare() / qGaussianFunc.GetNDF()
-        print "Chisquared/NDF: %d / %d" % (qGaussianFunc.GetChisquare(), qGaussianFunc.GetNDF())
+        # chisquare_per_ndf = q_gaussian_func.GetChisquare() / q_gaussian_func.GetNDF()
+        print "Chisquared/NDF: %d / %d" % (q_gaussian_func.GetChisquare(), q_gaussian_func.GetNDF())
         # if chisquare_per_ndf < 2:
         #     print "qGaussian fitted!"
-        return [qGaussianFunc.GetParameter(2), qGaussianFunc.GetParError(2)]
+        return [q_gaussian_func.GetParameter(2), q_gaussian_func.GetParError(2)]
     print "Failed to fit qGaussian"
     return [0, 0]
 
@@ -447,10 +445,8 @@ def make_qgaussian_fit(data, mean, stdev):
 def make_alpha_vs_phi_plot(run_id, is_parallel):
     if is_parallel:
         letter = 'P'
-        run_type = 'Par'
     else:
         letter = 'A'
-        run_type = 'Anti'
     file_path = srkdata.srkglobal.results_dir + "Results_RID" + str(run_id) + "_" + letter + ".root"
 
     if not srkmisc.file_exits_and_not_zombie(file_path):
@@ -469,7 +465,7 @@ def make_alpha_vs_phi_plot(run_id, is_parallel):
     for i in xrange(num_events):
         hit_tree.GetEntry(i)
         phi_list.append(hit_tree.phi)
-        alpha = get_alpha_angle_2D(radius, hit_tree.pos0, hit_tree.vel0)
+        alpha = get_alpha_angle_2d(radius, hit_tree.pos0, hit_tree.vel0)
         alpha_list.append(alpha)
     root_file.Close()
 
@@ -480,7 +476,7 @@ def make_alpha_vs_phi_plot(run_id, is_parallel):
     plt.scatter(alpha_list, delta_phi_list)
 
 
-def get_alpha_angle_2D(radius, pos0, vel0):
+def get_alpha_angle_2d(radius, pos0, vel0):
     shape = TGeoTube(0, radius, radius)
     point = array.array('d', [pos0.X(), pos0.Y(), 0])
     vel0.SetZ(0)
@@ -543,7 +539,6 @@ def make_sz_prob_dist(run_id, is_parallel, use_wrapping=True):
         theta_list.append(hit_tree.theta)
     root_file.Close()
 
-    phi_mean = 0
     if use_wrapping:
         phi_mean = srkmisc.reduce_periodics(phi_list)
     else:
@@ -560,10 +555,10 @@ def make_sz_prob_dist(run_id, is_parallel, use_wrapping=True):
     x = np.linspace(-30, 30, num=60)
 
     y = []
-    for nstd in x:
+    for num_std_dev in x:
         sz_det_prob = 0
         for phi, theta in zip(phi_list, theta_list):
-            sz_det_prob += calc_opposite_spin_prob(phi - phi_mean + comb_std * nstd, theta)
+            sz_det_prob += calc_opposite_spin_prob(phi - phi_mean + comb_std * num_std_dev, theta)
         sz_det_prob /= num_events
         y.append(1 - sz_det_prob)
 
@@ -615,7 +610,7 @@ def calc_step_tree(file_path, inp_periodic_stop_time):
     periodic_stop_time = inp_periodic_stop_time
     for i in xrange(user_info_list.GetEntries()):
         par = user_info_list.At(i)
-        if (par.GetName() == 'PeriodicStopTime'):
+        if par.GetName() == 'PeriodicStopTime':
             periodic_stop_time = float(par.GetTitle())
             break
 
@@ -631,7 +626,7 @@ def calc_step_tree(file_path, inp_periodic_stop_time):
 
     # Add data
     for i in xrange(num_events):
-        if (i % 100 == 0):
+        if i % 100 == 0:
             print "Stepping for Event {} in {}".format(i, file_path)
         for j in xrange(num_steps_per_event):
             step_tree.GetEntry(i * num_steps_per_event + j)

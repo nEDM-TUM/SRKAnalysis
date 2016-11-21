@@ -432,7 +432,7 @@ def run_on_optima(srk_settings, run_settings):
     return run_id
 
 
-def execute_SQL_database_command(command, value_tuple):
+def execute_sql_database_command(command, value_tuple):
     """Executes a database command with no return."""
     db_connection = sqlite3.connect(srkglobal.database_path)
     db_cursor = db_connection.cursor()
