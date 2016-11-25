@@ -355,12 +355,12 @@ def make_macro_and_add_to_database(srk_settings, run_settings):
 
 def sync_macros_to_optima():
     """Syncs macros from local to optima using a shell script."""
-    call(['bash', '/home/mjbales/work/nedm/scripts/syncMacrosToOptima.sh'])
+    call(['bash', srkglobal.scripts_dir+'syncMacrosToOptima.sh'])
 
 
 def sync_results_from_optima():
     """Syncs result files from optima."""
-    call(['bash', '/home/mjbales/work/nedm/scripts/syncResultsFromOptima.sh'])
+    call(['bash', srkglobal.scripts_dir+'syncResultsFromOptima.sh'])
 
 
 def run_command_optima(command):
@@ -368,7 +368,7 @@ def run_command_optima(command):
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(srkglobal.optima_address, username="mjbales")
+    ssh.connect(srkglobal.optima_address, username=srkglobal.username)
     ssh_std_in, ssh_std_out, ssh_std_err = ssh.exec_command(command)
     print('$OPTIMA stdout: ' + str(ssh_std_out.readlines()))
     print('$OPTIMA stderr: ' + str(ssh_std_err.readlines()))
@@ -391,6 +391,19 @@ def run_macro_optima(rid_number):
         rid_number) + '.mac &> ' + srkglobal.logs_dir + 'logRID' + str(rid_number) + '.txt&'
 
     run_command_optima(command)
+
+
+def make_and_run(srk_settings, run_settings,computer="work_laptop"):
+    """Adds run to database, makes macro, and runs it (remotely if on optima)"""
+
+    prev_comp=srkglobal.computer
+    srkglobal.set_computer(computer)
+    rid=make_macro_and_add_to_database(srk_settings, run_settings)
+    if computer == "optima":
+        run_macro_optima(rid)
+    else:
+        run_macro_local(rid)
+    srkglobal.set_computer(prev_comp)
 
 
 def run_mult_macro_local(run_ids):

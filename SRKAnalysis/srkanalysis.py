@@ -389,7 +389,7 @@ def make_tsallis_fit(data, mean, stdev):
     histogram = TH1D("hist", "hist", 100, -5, 5)
     for phi in data:
         histogram.Fill((phi - mean) / stdev)
-    tsallis_func = TF1("tsallisFunc", "[0]/pow(1+((x)/[1])*((x)/[1]),[2])", -5, 5)
+    tsallis_func = TF1("phiTsallisFunc", "[0]/pow(1+((x)/[1])*((x)/[1]),[2])", -5, 5)
     max_bin = histogram.GetMaximum()
     tsallis_func.SetParNames("Amplitude", "Sigma", "Power")
     tsallis_func.SetParLimits(1, .1, 20)

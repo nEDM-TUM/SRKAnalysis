@@ -6,6 +6,7 @@ __email__ = "matthew.bales@gmail.com"
 
 # Global settings
 database_runlog_table_name = "RunLog"
+username = "mjbales"
 
 # Computer specific paths and settings
 computer = None  # Computer alias
@@ -15,6 +16,7 @@ hists_dir = None  # Where histograms or txt data are stored
 results_dir = None  # Where SRK root files are stored
 logs_dir = None  # Where SRK log files are stored
 tracks_dir = None  # Where tracks are stored
+scripts_dir = None # Where SRK related scripts are stored
 srk_path = None  # Where SRK executable binary is stored
 database_path = None  # Where sqlite database is stored
 os = None  # What OS the computer uses
@@ -30,6 +32,7 @@ def set_computer(inp_computer):
     global hists_dir
     global srk_path
     global tracks_dir
+    global scripts_dir
     global database_path
     global os
     global computer
@@ -42,6 +45,7 @@ def set_computer(inp_computer):
         hists_dir = '/home/mjbales/work/nedm/hists/'
         srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
         tracks_dir = '/media/mjbales/data/nedm/tracks/'
+        scripts_dir = '/home/mjbales/work/code/SRKAnalysis/scripts/'
         database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
         os = 'Linux'
     elif computer == 'home_desktop':

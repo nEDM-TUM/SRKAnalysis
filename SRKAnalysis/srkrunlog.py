@@ -4136,6 +4136,33 @@ srkglobal.set_computer("work_laptop")
 ###################################################
 # rids=range(7610,7614)
 # for rid in rids:
-#     srkdata.run_macro_optima(rid)
 #     srkdata.calc_run_stats_to_database(rid)
-print srkdata.get_last_primary_key_in_database()
+
+##############################################################
+# Step tree calc
+# rids=range(7610,7614)
+# if __name__ == '__main__':
+#     srkmultiprocessing.run_func_rids(rids, srkanalysis.calc_step_tree_to_txt,0.00333333)
+
+###################################################
+r['Title'] = "Wall Depol only-Correct Bernd Hg Setup Test w Periodic, Fixed 3"
+r['SRKVersion'] = '7dc2443902b6324aed9645abb367858138327163'
+r['Date'] = today.strftime('%m/%d/%y')
+r['RunType'] = 'parOnly'
+r['NumTracksPer'] = 10000
+s['VelProfHistPath'] = '!293.15'
+s['ChamberRadius']=0.025
+s['ChamberHeight']=0.10
+s['ChamberRotation'] = '0. 90. 0.'
+s['E0FieldStrength']=0
+s['B0FieldStrength']=1e-6
+s['BGradFieldStrength']=0
+s['RecordAllSteps']=1
+s['PeriodicStopTime']=0.00333333
+s['TimeLimit']=100
+wall_depol=srkmisc.even_sample_over_log(0.000001, 0.00001, 4)
+
+for x in wall_depol:
+    s['DepolAtWallProb'] = x
+    srkdata.make_and_run(s,r,"optima")
+    time.sleep(2)
