@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import csv
 from ROOT import TFile, gDirectory, gROOT, gRandom, TH1D, TF1, TGeoTube, TVector3
 import ROOT
@@ -18,9 +20,9 @@ __maintainer__ = "Matthew Bales"
 __email__ = "matthew.bales@gmail.com"
 
 
-def calc_stats_for_results_file(file_path, use_wrapping=False):
+def calc_stats_for_results_file(file_path, runtype="nedm", use_wrapping=False):
     """Calculates summary stats for a SRK results ROOT file."""
-    stats = srkdata.default_file_stats()
+    stats = srkdata.default_file_stats(runtype)
 
     # Check if file exists and is valid
     if not srkmisc.file_exits_and_not_zombie(file_path):
@@ -50,50 +52,52 @@ def calc_stats_for_results_file(file_path, use_wrapping=False):
         stats['PhiMean'] = srkmisc.careful_mean(phi_array)
         stats['ThetaMean'] = srkmisc.careful_mean(theta_array)
 
-    # Calculate probability of detecting the spin in the opposite direction
-    stats['SZDetProb'] = 0.
-    for phi, theta in zip(phi_array, theta_array):
-        stats['SZDetProb'] += calc_opposite_spin_prob(phi - stats['PhiMean'], theta)
-    stats['SZDetProb'] /= stats['NumEventsRun']
+    if runtype != "g2":
+		# Calculate probability of detecting the spin in the opposite direction
+		stats['SZDetProb'] = 0.
+		for phi, theta in zip(phi_array, theta_array):
+			stats['SZDetProb'] += calc_opposite_spin_prob(phi - stats['PhiMean'], theta)
+		stats['SZDetProb'] /= stats['NumEventsRun']
 
     # Calculate other summary info
     stats['PhiStDev'] = srkmisc.careful_std(phi_array)
     stats['ThetaStDev'] = srkmisc.careful_std(theta_array)
     stats['PhiError'] = stats['PhiStDev'] / math.sqrt(len(phi_array))
     stats['ThetaError'] = stats['ThetaStDev'] / math.sqrt(len(theta_array))
-    stats['PhiKurtosis'] = kurtosis(phi_array)
-    stats['ThetaKurtosis'] = kurtosis(theta_array)
-    stats['PhiSkewness'] = skew(phi_array)
-    stats['ThetaSkewness'] = skew(theta_array)
-    print "Phi Kurtosis: %f" % stats['PhiKurtosis']
+    if runtype != "g2":
+		stats['PhiKurtosis'] = kurtosis(phi_array)
+		stats['ThetaKurtosis'] = kurtosis(theta_array)
+		stats['PhiSkewness'] = skew(phi_array)
+		stats['ThetaSkewness'] = skew(theta_array)
+		print "Phi Kurtosis: %f" % stats['PhiKurtosis']
 
-    percentile_lower, percentile_upper = np.percentile(phi_array, (16.5, 83.50))
-    percentile_width = percentile_upper - percentile_lower
-    stats['PhiPercentileWidth'] = percentile_width
+		percentile_lower, percentile_upper = np.percentile(phi_array, (16.5, 83.50))
+		percentile_width = percentile_upper - percentile_lower
+		stats['PhiPercentileWidth'] = percentile_width
 
-    percentile_lower, percentile_upper = np.percentile(theta_array, (16.5, 83.5))
-    percentile_width = percentile_upper - percentile_lower
-    stats['ThetaPercentileWidth'] = percentile_width
+		percentile_lower, percentile_upper = np.percentile(theta_array, (16.5, 83.5))
+		percentile_width = percentile_upper - percentile_lower
+		stats['ThetaPercentileWidth'] = percentile_width
 
-    # Fit phi to Tsallis q-Gaussian function (old form)
-    power, error = make_tsallis_fit(phi_array, stats['PhiMean'], stats['PhiStDev'])
-    stats['PhiTsallisPower'] = power
-    stats['PhiTsallisPowerError'] = error
+		# Fit phi to Tsallis q-Gaussian function (old form)
+		power, error = make_tsallis_fit(phi_array, stats['PhiMean'], stats['PhiStDev'])
+		stats['PhiTsallisPower'] = power
+		stats['PhiTsallisPowerError'] = error
 
-    # Fit theta to Tsallis q-Gaussian function (old form)
-    power, error = make_tsallis_fit(theta_array, stats['ThetaMean'], stats['ThetaStDev'])
-    stats['ThetaTsallisPower'] = power
-    stats['ThetaTsallisPowerError'] = error
+		# Fit theta to Tsallis q-Gaussian function (old form)
+		power, error = make_tsallis_fit(theta_array, stats['ThetaMean'], stats['ThetaStDev'])
+		stats['ThetaTsallisPower'] = power
+		stats['ThetaTsallisPowerError'] = error
 
-    # Fit phi to Tsallis q-Gaussian function (new form)
-    power, error = make_qgaussian_fit(phi_array, stats['PhiMean'], stats['PhiStDev'])
-    stats['PhiQGaussianQ'] = power
-    stats['PhiQGaussianQError'] = error
+		# Fit phi to Tsallis q-Gaussian function (new form)
+		power, error = make_qgaussian_fit(phi_array, stats['PhiMean'], stats['PhiStDev'])
+		stats['PhiQGaussianQ'] = power
+		stats['PhiQGaussianQError'] = error
 
-    # Fit theta to Tsallis q-Gaussian function (new form)
-    power, error = make_qgaussian_fit(theta_array, stats['ThetaMean'], stats['ThetaStDev'])
-    stats['ThetaQGaussianQ'] = power
-    stats['ThetaQGaussianQError'] = error
+		# Fit theta to Tsallis q-Gaussian function (new form)
+		power, error = make_qgaussian_fit(theta_array, stats['ThetaMean'], stats['ThetaStDev'])
+		stats['ThetaQGaussianQ'] = power
+		stats['ThetaQGaussianQError'] = error
 
     return stats
 
@@ -159,7 +163,7 @@ def calc_delta_stats_same_tracks(run_id, use_wrapping=True):
 
 
 def calc_run_stats(run_id):
-    """Calculates all the run statistics for a run for the database."""
+    """Calculates all the run statistics for a nedm-type run for the database."""
     srk_settings, run_settings = srkdata.get_settings_from_database(run_id)
 
     # Calculate all the statistics related to each orientation

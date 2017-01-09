@@ -6,7 +6,7 @@ __email__ = "matthew.bales@gmail.com"
 
 # Global settings
 database_runlog_table_name = "RunLog"
-username = "mjbales"
+username = "ekraegeloh"
 
 # Computer specific paths and settings
 computer = None  # Computer alias
@@ -24,49 +24,50 @@ optima_address = "optimal.universe-cluster.de"  # Optima address
 
 
 def set_computer(inp_computer):
-    """Sets universal settings and paths based on which computer is selected."""
-    global macro_dir
-    global results_dir
-    global logs_dir
-    global graphs_dir
-    global hists_dir
-    global srk_path
-    global tracks_dir
-    global scripts_dir
-    global database_path
-    global os
-    global computer
-    computer = inp_computer
-    if computer == 'work_laptop':
-        macro_dir = '/home/mjbales/work/nedm/macros/'
-        results_dir = '/media/mjbales/data/nedm/results/'
-        logs_dir = '/home/mjbales/work/nedm/logs/'
-        graphs_dir = '/home/mjbales/work/nedm/graphs/'
-        hists_dir = '/home/mjbales/work/nedm/hists/'
-        srk_path = '/home/mjbales/work/code/SRK/Release/bin/SRK'
-        tracks_dir = '/media/mjbales/data/nedm/tracks/'
-        scripts_dir = '/home/mjbales/work/code/SRKAnalysis/scripts/'
-        database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
-        os = 'Linux'
-    elif computer == 'home_desktop':
-        macro_dir = 'D:\\work\\nedm\\macros\\'
-        results_dir = 'D:\\work\\nedm\\results\\'
-        graphs_dir = 'D:\\work\\nedm\\graphs\\'
-        hists_dir = 'D:\\work\\nedm\\hists\\'
-        logs_dir = 'D:\\work\\nedm\\logs\\'
-        srk_path = 'D:\\work\\code\\SRK\\Release\\SRK.exe'
-        tracks_dir = 'D:\\work\\nedm\\tracks\\'
-        database_path = 'D:\\work\\code\\SRKAnalysis\\nedmAnalysis.sqlite'
-        os = 'Windows'
-    elif computer == 'optima':
-        macro_dir = '/home/mjbales/work/nedm/macros/'
-        results_dir = '/home/mjbales/work/nedm/results/'
-        logs_dir = '/home/mjbales/work/nedm/logs/'
-        graphs_dir = '/home/mjbales/work/nedm/graphs/'
-        hists_dir = '/home/mjbales/work/nedm/hists/'
-        srk_path = '/home/mjbales/SRK/build/SRK'
-        tracks_dir = '/media/mjbales/data/nedm/tracks/'
-        database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
-        os = 'Linux'
+	"""Sets universal settings and paths based on which computer is selected."""
+	global macro_dir
+	global results_dir
+	global logs_dir
+	global graphs_dir
+	global hists_dir
+	global srk_path
+	global tracks_dir
+	global scripts_dir
+	global database_path
+	global os
+	global computer
+	computer = inp_computer
+	if computer == 'work_desktop':
+		macro_dir = '/mnt/data/Eva/Simulation/work/macros/'
+		results_dir = '/mnt/data/Eva/Simulation/work/results/'
+		logs_dir = '/mnt/data/Eva/Simulation/work/logs/'
+		graphs_dir = '/mnt/data/Eva/Simulation/work/graphs/'
+		hists_dir = '/mnt/data/Eva/Simulation/work/hists/'
+#        srk_path = '/mnt/data/Eva/Simulation/SRK/Release/bin/SRK'
+		srk_path = '/mnt/data/Eva/Simulation/SRK/Debug/SRK'
+		tracks_dir = '/mnt/data/Eva/Simulation/work/tracks/'
+		scripts_dir = '/mnt/data/Eva/Simulation/SRKAnalysis/scripts/'
+		database_path = '/mnt/data/Eva/Simulation/SRKAnalysis/g2Analysis.sqlite'
+		os = 'Linux'
+#    elif computer == 'home_desktop':
+#        macro_dir = 'D:\\work\\nedm\\macros\\'
+#        results_dir = 'D:\\work\\nedm\\results\\'
+#        graphs_dir = 'D:\\work\\nedm\\graphs\\'
+#        hists_dir = 'D:\\work\\nedm\\hists\\'
+#        logs_dir = 'D:\\work\\nedm\\logs\\'
+#        srk_path = 'D:\\work\\code\\SRK\\Release\\SRK.exe'
+#        tracks_dir = 'D:\\work\\nedm\\tracks\\'
+#        database_path = 'D:\\work\\code\\SRKAnalysis\\nedmAnalysis.sqlite'
+#        os = 'Windows'
+	elif computer == 'optima':
+		macro_dir = '/home/mjbales/work/nedm/macros/'
+		results_dir = '/home/mjbales/work/nedm/results/'
+		logs_dir = '/home/mjbales/work/nedm/logs/'
+		graphs_dir = '/home/mjbales/work/nedm/graphs/'
+		hists_dir = '/home/mjbales/work/nedm/hists/'
+		srk_path = '/home/mjbales/SRK/build/SRK'
+		tracks_dir = '/media/mjbales/data/nedm/tracks/'
+		database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
+		os = 'Linux'
 
 
