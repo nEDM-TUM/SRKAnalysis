@@ -1,11 +1,10 @@
-#!/usr/bin/python2
-
 from subprocess import call
 import paramiko
 import sqlite3
 import srkanalysis
 import srkmisc
 import srkglobal
+import time
 from ROOT import gRandom, gDirectory, TList, TFile, TNamed, TTree
 
 __author__ = "Matthew Bales"
@@ -40,7 +39,7 @@ def default_srk_settings(runtype="nedm"):
 			'DefaultPos': '0 0 0',
 			'DefaultVel': '0 0 0',
 			'Mass': 1.8835316e-28,
-			'GyromagneticRatio': -0.00116592091,
+			'GyromagneticRatio': 0.00116592091,
 			'PhiStart': 1.570796327,
 			'ThetaStart': 0.,
 			'EPSAbs': 1e-07,
@@ -422,7 +421,10 @@ def get_settings_from_database(run_id, runtype="nedm", db_connection=None):
 	all_settings = merge_dicts(default_run_settings(runtype), default_srk_settings(runtype))
 	columns_str = ''
 	for i in all_settings.keys():
-		columns_str += i + ','
+		if i == "DefaultPos": columns_str += "InitialPos" + ','
+		elif i == "DefaultVel": columns_str += "InitialVel" + ','
+		else:
+			columns_str += i + ','
 	columns_str = columns_str[:-1]  # remove last comma
 
 	values_from_select = get_data_for_rids_from_database([run_id, ], columns_str, db_connection)
@@ -500,8 +502,9 @@ def make_and_run(srk_settings, run_settings,computer="work_laptop"):
 	if computer == "optima":
 		run_macro_optima(rid)
 	else:
-		run_macro_local(rid)
+		run_macro_local(rid, True)
 	results_path = srkglobal.results_dir + 'Results_RID' + str(rid) + '.root'
+#	time.sleep(5) #To wait for SRK to finish. Maybe later somewhere else, or have return value of SRK?
 	if not srkmisc.file_exits_and_not_zombie(results_path):
 		print "No results file created. Check log."
 	else:

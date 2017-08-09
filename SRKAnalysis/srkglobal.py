@@ -69,5 +69,10 @@ def set_computer(inp_computer):
 		tracks_dir = '/media/mjbales/data/nedm/tracks/'
 		database_path = '/home/mjbales/work/code/SRKAnalysis/nedmAnalysis.sqlite'
 		os = 'Linux'
+		
+def set_graphs_dir(path):
+	"""Sets the directory for plots and graphs."""
+	global graphs_dir
+	graphs_dir=path
 
 

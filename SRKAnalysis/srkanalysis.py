@@ -1,5 +1,3 @@
-#!/usr/bin/python2
-
 import csv
 from ROOT import TFile, gDirectory, gROOT, gRandom, TH1D, TF1, TGeoTube, TVector3
 import ROOT
